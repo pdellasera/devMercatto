@@ -1,0 +1,63 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - button "🌙 Dark" [ref=e4]
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - heading "Design System Demo" [level=1] [ref=e7]
+      - paragraph [ref=e8]: Dashboard de Prospectos Deportivos - Sistema de Diseño
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - heading "Contador Interactivo" [level=3] [ref=e12]
+          - paragraph [ref=e13]: Demuestra el sistema de botones y estados
+        - generic [ref=e15]:
+          - generic [ref=e16]: "0"
+          - paragraph [ref=e17]: Clicks realizados
+        - generic [ref=e18]:
+          - button "Reset" [disabled]
+          - button "Incrementar" [ref=e19]
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - heading "Variantes de Botones" [level=3] [ref=e22]
+          - paragraph [ref=e23]: Diferentes estilos disponibles en el sistema
+        - generic [ref=e24]:
+          - button "Primary" [ref=e25]
+          - button "Secondary" [ref=e26]
+          - button "Outline" [ref=e27]
+          - button "Ghost" [ref=e28]
+          - button "Destructive" [ref=e29]
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - heading "Paleta de Colores" [level=3] [ref=e32]
+          - paragraph [ref=e33]: Colores principales del sistema
+        - generic [ref=e35]:
+          - generic [ref=e38]: Primary
+          - generic [ref=e41]: Success
+          - generic [ref=e44]: Warning
+          - generic [ref=e47]: Error
+    - generic [ref=e48]:
+      - generic [ref=e49]:
+        - heading "Sistema de Diseño Implementado" [level=3] [ref=e50]
+        - paragraph [ref=e51]: Características principales del design system
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - heading "✅ Implementado" [level=4] [ref=e55]
+          - list [ref=e56]:
+            - listitem [ref=e57]: • Design tokens (colores, tipografía, espaciado, sombras)
+            - listitem [ref=e58]: • Componentes Button y Card
+            - listitem [ref=e59]: • Sistema de temas (light/dark)
+            - listitem [ref=e60]: • Configuración TailwindCSS v4
+            - listitem [ref=e61]: • Documentación con Storybook
+            - listitem [ref=e62]: • TypeScript support completo
+        - generic [ref=e63]:
+          - heading "🚀 Próximamente" [level=4] [ref=e64]
+          - list [ref=e65]:
+            - listitem [ref=e66]: • Más componentes UI (Input, Select, etc.)
+            - listitem [ref=e67]: • Componentes de layout
+            - listitem [ref=e68]: • Componentes de datos
+            - listitem [ref=e69]: • Componentes de formularios
+            - listitem [ref=e70]: • Testing automatizado
+            - listitem [ref=e71]: • Optimizaciones de rendimiento
+```
