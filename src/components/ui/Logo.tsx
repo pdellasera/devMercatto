@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
+import logoImage from '../../assets/logo.png';
 
 export interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | '8xl' | '9xl' | '10xl';
@@ -54,7 +55,7 @@ const Logo: React.FC<LogoProps> = ({
   return (
     <div className={cn('flex items-center space-x-2', className)}>
       <img
-        src="/src/assets/logo.png"
+        src={logoImage}
         alt="Mercatto Logo"
         className={cn(
           'object-contain',
