@@ -82,7 +82,8 @@ class ApiService {
 
   async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await this.api.post<ApiResponse<T>>(url, data, config);
-    return response.data;
+    console.log('🔍 Response: ApiService', response);
+    return response.data.message;
   }
 
   async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {

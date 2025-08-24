@@ -1,13 +1,10 @@
 export interface ApiResponse<T = any> {
-  sucess: boolean;
-  message?: {
+  message: {
+    sucess: boolean;
     data?: T;
     error?: string;
     errors?: Record<string, string[]>;
   };
-  data?: T;
-  error?: string;
-  errors?: Record<string, string[]>;
 }
 
 export interface PaginationMeta {
