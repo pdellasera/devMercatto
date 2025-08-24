@@ -35,6 +35,7 @@ import { DismissibleNotice } from '../components/ui/DismissibleNotice';
 import { LoginModal } from '../components/ui/LoginModal';
 import { Prospect } from '../types';
 import { prospectsService } from '../services/prospects.service';
+import { ApiDebugger } from '../components/debug/ApiDebugger';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -643,15 +644,18 @@ export const Dashboard: React.FC = () => {
             </motion.div>
           )}
 
-          {/* Login Modal */}
-          <LoginModal
-            isOpen={showLoginModal}
-            onClose={() => setShowLoginModal(false)}
-            onLogin={handleLogin}
-            onRegister={handleRegister}
-          />
-        </motion.div>
-      </div>
-    </MainLayout>
-  );
-};
+                     {/* Login Modal */}
+           <LoginModal
+             isOpen={showLoginModal}
+             onClose={() => setShowLoginModal(false)}
+             onLogin={handleLogin}
+             onRegister={handleRegister}
+           />
+
+           {/* API Debugger - Temporal */}
+           <ApiDebugger />
+         </motion.div>
+       </div>
+     </MainLayout>
+   );
+ };
