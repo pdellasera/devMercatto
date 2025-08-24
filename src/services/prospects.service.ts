@@ -158,7 +158,8 @@ const mockProspects: Prospect[] = [
 class ProspectsService {
   async getProspects(filters?: ProspectFilters): Promise<ProspectsResponse> {
     try {
-      console.log('Fetching prospects with filters:', filters);
+      console.log('🔍 Fetching prospects with filters:', filters);
+      console.log('🌐 API URL:', 'https://mercatto.app/v1/api/main/home');
 
       // Call the new API endpoint
       const response = await apiService.post<any>(
@@ -169,18 +170,27 @@ class ProspectsService {
         }
       ) as any;
 
-      console.log('Raw API response:', response);
+      console.log('📡 Raw API response:', response);
+      console.log('📊 Response type:', typeof response);
+      console.log('📊 Response keys:', Object.keys(response || {}));
 
       // Check if the response has the expected structure
+      console.log('🔍 Checking response.success:', response.sucess);
       if (!response.sucess) {
-        console.error('API response error:', response);
+        console.error('❌ API response error:', response);
+        console.error('❌ Response.error:', response.error);
         throw new Error(response.error || 'Failed to fetch prospects from API');
       }
+      console.log('✅ API response successful');
 
       // Extract prospects from the deeply nested structure
       let prospects: Prospect[] = [];
       
       try {
+        console.log('🔍 Parsing response.data:', response.data);
+        console.log('🔍 response.data type:', typeof response.data);
+        console.log('🔍 response.data is array:', Array.isArray(response.data));
+        
         // Access the specific path: response.data[0].tableData.atletaList
         if (response.data && 
             Array.isArray(response.data) && 
@@ -190,9 +200,11 @@ class ProspectsService {
             Array.isArray(response.data[0].tableData.atletaList)) {
           
           prospects = response.data[0].tableData.atletaList;
-          console.log('Successfully extracted atletaList from API response');
+          console.log('✅ Successfully extracted atletaList from API response');
         } else {
-          console.warn('Expected data structure not found, trying fallback parsing...');
+          console.warn('⚠️ Expected data structure not found, trying fallback parsing...');
+          console.log('🔍 response.data[0]:', response.data?.[0]);
+          console.log('🔍 response.data[0]?.tableData:', response.data?.[0]?.tableData);
           
           // Fallback: try to find atletaList in the response
           const findAtletaList = (obj: any): Prospect[] | null => {
@@ -211,9 +223,10 @@ class ProspectsService {
           const fallbackProspects = findAtletaList(response);
           if (fallbackProspects) {
             prospects = fallbackProspects;
-            console.log('Found prospects using fallback parsing');
+            console.log('✅ Found prospects using fallback parsing');
           } else {
-            console.error('Could not find atletaList in response structure');
+            console.error('❌ Could not find atletaList in response structure');
+            console.error('❌ Full response structure:', JSON.stringify(response, null, 2));
             throw new Error('Invalid response structure: atletaList not found');
           }
         }
@@ -304,10 +317,14 @@ class ProspectsService {
       console.log('Returning result:', result);
       return result;
     } catch (error) {
-      console.error('Error in getProspects:', error);
+      console.error('❌ Error in getProspects:', error);
+      console.error('❌ Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace'
+      });
 
       // Fallback to mock data if API fails
-      console.log('Falling back to mock data due to API error');
+      console.log('🔄 Falling back to mock data due to API error');
       return this.getMockProspects(filters);
     }
   }
