@@ -507,10 +507,10 @@ class ProspectsService {
         }
       );
 
-      if (response.success && response.data) {
+      if (response.sucess && response.data) {
         return response.data;
       } else {
-        throw new Error(response.message || 'Failed to upload video');
+        throw new Error(response.error || 'Failed to upload video');
       }
     } catch (error) {
       throw error;
@@ -525,10 +525,10 @@ class ProspectsService {
     try {
       const response = await apiService.patch<Prospect>(`/prospects/${id}/ratings`, ratings);
 
-      if (response.success && response.data) {
+      if (response.sucess && response.data) {
         return response.data;
       } else {
-        throw new Error(response.message || 'Failed to update ratings');
+        throw new Error(response.error || 'Failed to update ratings');
       }
     } catch (error) {
       throw error;
@@ -539,10 +539,10 @@ class ProspectsService {
     try {
       const response = await apiService.patch<Prospect>(`/prospects/${id}/status`, { status });
 
-      if (response.success && response.data) {
+      if (response.sucess && response.data) {
         return response.data;
       } else {
-        throw new Error(response.message || 'Failed to update status');
+        throw new Error(response.error || 'Failed to update status');
       }
     } catch (error) {
       throw error;
@@ -553,10 +553,10 @@ class ProspectsService {
     try {
       const response = await apiService.patch<Prospect>(`/prospects/${id}/notes`, { notes });
 
-      if (response.success && response.data) {
+      if (response.sucess && response.data) {
         return response.data;
       } else {
-        throw new Error(response.message || 'Failed to add notes');
+        throw new Error(response.error || 'Failed to add notes');
       }
     } catch (error) {
       throw error;

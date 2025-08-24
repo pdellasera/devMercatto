@@ -7,7 +7,7 @@ export interface Prospect {
   ovrFisico: number;
   ovrTecnico: number;
   overCompetencia: number;
-  ovrGeneral: number;
+  ovrGeneral?: number;
   status: string;
   age: number;
   yearOfbirth: number;

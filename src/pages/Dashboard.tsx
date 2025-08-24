@@ -284,7 +284,7 @@ export const Dashboard: React.FC = () => {
       key: 'overallRating',
       header: 'Over General',
       accessor: (prospect: Prospect) => {
-        const overall = prospect.ovrGeneral //Math.round((prospect.ovrFisico + prospect.ovrTecnico + prospect.overCompetencia) / 3);
+        const overall = prospect.ovrGeneral || 0; //Math.round((prospect.ovrFisico + prospect.ovrTecnico + prospect.overCompetencia) / 3);
         return (
           <div className="text-center flex items-center justify-center">
             <div className={`font-semibold text-sm px-2 py-1 rounded-sm max-w-20 w-20 text-center ${overall === 0 ? 'text-gray-400 bg-gray-400/2' :

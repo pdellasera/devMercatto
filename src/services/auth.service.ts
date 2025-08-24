@@ -6,7 +6,7 @@ class AuthService {
     try {
       const response = await apiService.post<AuthResponse>('/auth/login', credentials);
       
-      if (response.success && response.data) {
+      if (response.sucess && response.data) {
         // Store tokens
         apiService.setAuthToken(response.data.token);
         localStorage.setItem('refresh_token', response.data.refreshToken);
@@ -16,7 +16,7 @@ class AuthService {
         
         return response.data;
       } else {
-        throw new Error(response.message || 'Login failed');
+        throw new Error(response.error || 'Login failed');
       }
     } catch (error) {
       throw error;
@@ -48,11 +48,11 @@ class AuthService {
         refreshToken,
       });
 
-      if (response.success && response.data) {
+      if (response.sucess && response.data) {
         apiService.setAuthToken(response.data.token);
         return response.data.token;
       } else {
-        throw new Error(response.message || 'Token refresh failed');
+        throw new Error(response.error || 'Token refresh failed');
       }
     } catch (error) {
       // If refresh fails, logout user
@@ -69,7 +69,7 @@ class AuthService {
 
       const response = await apiService.get<User>('/auth/me');
       
-      if (response.success && response.data) {
+      if (response.sucess && response.data) {
         // Update stored user info
         localStorage.setItem('user', JSON.stringify(response.data));
         return response.data;
@@ -85,12 +85,12 @@ class AuthService {
     try {
       const response = await apiService.put<User>('/auth/profile', userData);
       
-      if (response.success && response.data) {
+      if (response.sucess && response.data) {
         // Update stored user info
         localStorage.setItem('user', JSON.stringify(response.data));
         return response.data;
       } else {
-        throw new Error(response.message || 'Profile update failed');
+        throw new Error(response.error || 'Profile update failed');
       }
     } catch (error) {
       throw error;
@@ -104,8 +104,8 @@ class AuthService {
         newPassword,
       });
       
-      if (!response.success) {
-        throw new Error(response.message || 'Password change failed');
+      if (!response.sucess) {
+        throw new Error(response.error || 'Password change failed');
       }
     } catch (error) {
       throw error;
