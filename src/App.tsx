@@ -5,6 +5,7 @@ import { ThemeProvider } from './design-system/theme/ThemeProvider';
 import { useAuth } from './hooks/useAuth';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
+import useDeviceDetector from './hooks/useDeviceDetector';
 
 // Loading component
 const LoadingSpinner: React.FC = () => (
@@ -48,54 +49,85 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
 };
 
 function App() {
+  const { isMobile, isTablet } = useDeviceDetector();
+
+  // Decidir qué router usar basado en el tipo de dispositivo
+  const shouldUseMobileRouter = isMobile || isTablet;
+
   return (
     <ThemeProvider>
       <Router>
         <div className="App">
           <Routes>
-            {/* Public routes */}
-            <Route
-              path="/login"
-              element={
-                <PublicRoute>
-                  <Login />
-                </PublicRoute>
-              }
-            />
+            {shouldUseMobileRouter ? (
+              // Router móvil para dispositivos móviles y tablets
+              <>
+                {/* Mobile routes */}
+                <Route path={mobileRoutes.path as string} element={mobileRoutes.element}>
+                  {mobileRoutes.children?.map((child, idx) => (
+                    <Route
+                      key={idx}
+                      index={child.index as boolean | undefined}
+                      path={child.path}
+                      element={child.element as React.ReactElement}
+                    />)
+                  )}
+                </Route>
 
-            {/* Public dashboard - accessible without login */}
-            <Route
-              path="/dashboard"
-              element={
-                <OptionalAuthRoute>
-                  <Dashboard />
-                </OptionalAuthRoute>
-              }
-            />
-
-            {/* Default redirect to dashboard */}
-            <Route
-              path="/"
-              element={<Navigate to="/dashboard" replace />}
-            />
-
-            {/* Mobile routes */}
-            <Route path={mobileRoutes.path as string} element={mobileRoutes.element}>
-              {mobileRoutes.children?.map((child, idx) => (
+                {/* Redirect all other routes to mobile dashboard */}
                 <Route
-                  key={idx}
-                  index={child.index as boolean | undefined}
-                  path={child.path}
-                  element={child.element as React.ReactElement}
-                />)
-              )}
-            </Route>
+                  path="/login"
+                  element={<Navigate to="/mobile" replace />}
+                />
+                <Route
+                  path="/dashboard"
+                  element={<Navigate to="/mobile" replace />}
+                />
+                <Route
+                  path="/"
+                  element={<Navigate to="/mobile" replace />}
+                />
+                <Route
+                  path="*"
+                  element={<Navigate to="/mobile" replace />}
+                />
+              </>
+            ) : (
+              // Router web para desktop
+              <>
+                {/* Public routes */}
+                <Route
+                  path="/login"
+                  element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  }
+                />
 
-            {/* Catch all route */}
-            <Route
-              path="*"
-              element={<Navigate to="/dashboard" replace />}
-            />
+                {/* Public dashboard - accessible without login */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <OptionalAuthRoute>
+                      <Dashboard />
+                    </OptionalAuthRoute>
+                  }
+                />
+
+                {/* Default redirect to dashboard */}
+                <Route
+                  path="/"
+                  element={<Navigate to="/dashboard" replace />}
+                />
+
+                {/* Catch all route */}
+                <Route
+                  path="*"
+                  element={<Navigate to="/dashboard" replace />}
+                />
+              </>
+            )}
           </Routes>
         </div>
       </Router>
