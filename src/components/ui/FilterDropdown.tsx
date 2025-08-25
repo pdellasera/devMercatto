@@ -1,231 +1,165 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, X, Search } from 'lucide-react';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { 
+  ChevronUp, 
+  ChevronDown, 
+  Percent, 
+  User, 
+  Ruler, 
+  Flame, 
+  Trash2,
+  Plus
+} from 'lucide-react';
 import { cn } from '../../utils/cn';
 
-const filterDropdownVariants = cva(
-  'relative w-full',
-  {
-    variants: {
-      size: {
-        sm: 'text-sm',
-        md: 'text-base',
-        lg: 'text-lg',
-      },
-    },
-    defaultVariants: {
-      size: 'md',
-    },
-  }
-);
-
 export interface FilterOption {
-  value: string;
+  id: string;
   label: string;
-  disabled?: boolean;
+  icon: React.ReactNode;
+  type: 'range' | 'select' | 'number';
 }
 
-export interface FilterDropdownProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'>,
-    VariantProps<typeof filterDropdownVariants> {
-  options: FilterOption[];
-  value: string | string[];
-  onChange: (value: string | string[]) => void;
-  placeholder?: string;
-  label?: string;
-  multiple?: boolean;
-  searchable?: boolean;
-  disabled?: boolean;
-  error?: string;
+interface FilterDropdownProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAddFilter: (filterId: string) => void;
+  onClearAll: () => void;
+  className?: string;
 }
 
-const FilterDropdown = React.forwardRef<HTMLDivElement, FilterDropdownProps>(
-  ({ 
-    className, 
-    size, 
-    options, 
-    value, 
-    onChange, 
-    placeholder = 'Select option...',
-    label,
-    multiple = false,
-    searchable = false,
-    disabled = false,
-    error,
-    ...props 
-  }, ref) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    const searchRef = useRef<HTMLInputElement>(null);
+const filterOptions: FilterOption[] = [
+  {
+    id: 'ovrFisico',
+    label: 'OVR FISICO',
+    icon: <ChevronUp className="w-4 h-4" />,
+    type: 'range'
+  },
+  {
+    id: 'ovrTecnico',
+    label: 'OVR TECNICO',
+    icon: <Percent className="w-4 h-4" />,
+    type: 'range'
+  },
+  {
+    id: 'ovrCompetencia',
+    label: 'OVR DE COMPETENCIA',
+    icon: <Percent className="w-4 h-4" />,
+    type: 'range'
+  },
+  {
+    id: 'posicion',
+    label: 'POSICION',
+    icon: <ChevronUp className="w-4 h-4" />,
+    type: 'select'
+  },
+  {
+    id: 'yearOfBirth',
+    label: 'AÑO DE NACIMIENTO',
+    icon: <User className="w-4 h-4" />,
+    type: 'number'
+  },
+  {
+    id: 'talla',
+    label: 'TALLA',
+    icon: <Ruler className="w-4 h-4" />,
+    type: 'range'
+  },
+  {
+    id: 'resistencia',
+    label: 'RESISTENCIA',
+    icon: <Percent className="w-4 h-4" />,
+    type: 'range'
+  },
+  {
+    id: 'potencia',
+    label: 'POTENCIA',
+    icon: <Flame className="w-4 h-4" />,
+    type: 'range'
+  }
+];
 
-    useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-          setIsOpen(false);
-        }
-      };
+export const FilterDropdown: React.FC<FilterDropdownProps> = ({
+  isOpen,
+  onClose,
+  onAddFilter,
+  onClearAll,
+  className
+}) => {
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+  if (!isOpen) return null;
 
-    useEffect(() => {
-      if (isOpen && searchable && searchRef.current) {
-        searchRef.current.focus();
-      }
-    }, [isOpen, searchable]);
-
-    const filteredOptions = options.filter(option =>
-      searchable && searchQuery
-        ? option.label.toLowerCase().includes(searchQuery.toLowerCase())
-        : true
-    );
-
-    const selectedOptions = multiple
-      ? (Array.isArray(value) ? value : [value]).filter(Boolean)
-      : [value].filter(Boolean);
-
-    const handleOptionClick = (optionValue: string) => {
-      if (multiple) {
-        const newValues = selectedOptions.includes(optionValue)
-          ? selectedOptions.filter(v => v !== optionValue)
-          : [...selectedOptions, optionValue];
-        onChange(newValues as string[]);
-      } else {
-        onChange(optionValue);
-        setIsOpen(false);
-      }
-    };
-
-    const handleClear = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onChange(multiple ? [] : '');
-    };
-
-    const getDisplayText = () => {
-      if (selectedOptions.length === 0) return placeholder;
-      if (multiple) {
-        if (selectedOptions.length === 1) {
-          return options.find(opt => opt.value === selectedOptions[0])?.label || placeholder;
-        }
-        return `${selectedOptions.length} selected`;
-      }
-      return options.find(opt => opt.value === selectedOptions[0])?.label || placeholder;
-    };
-
-    return (
-      <div
-        ref={ref || dropdownRef}
-        className={cn(filterDropdownVariants({ size, className }))}
-        {...props}
-      >
-        {label && (
-          <label className="block text-sm font-medium text-text-primary mb-2">
-            {label}
-          </label>
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className={cn(
+          "absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50",
+          className
         )}
-
-        <div className="relative">
-          <div
-            className={cn(
-              'flex items-center justify-between w-full px-3 py-2 border border-border rounded-md bg-background cursor-pointer transition-colors',
-              'hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-              isOpen && 'ring-2 ring-primary ring-offset-2',
-              disabled && 'opacity-50 cursor-not-allowed',
-              error && 'border-danger focus:ring-danger'
-            )}
-            onClick={() => !disabled && setIsOpen(!isOpen)}
-          >
-            <span className={cn(
-              'truncate',
-              selectedOptions.length === 0 && 'text-text-secondary'
-            )}>
-              {getDisplayText()}
-            </span>
-            
-            <div className="flex items-center space-x-2">
-              {selectedOptions.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleClear}
-                  className="p-1 hover:bg-background-alt rounded-full transition-colors"
-                >
-                  <X className="w-3 h-3 text-text-secondary" />
-                </button>
-              )}
-              <ChevronDown 
+      >
+        {/* Dropdown Content */}
+        <div className="p-0">
+          {/* Filter Options List */}
+          <div className="max-h-96 overflow-y-auto">
+            {filterOptions.map((option, index) => (
+              <motion.div
+                key={option.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                onMouseEnter={() => setHoveredItem(option.id)}
+                onMouseLeave={() => setHoveredItem(null)}
                 className={cn(
-                  'w-4 h-4 text-text-secondary transition-transform',
-                  isOpen && 'rotate-180'
-                )} 
-              />
-            </div>
+                  "flex items-center justify-between px-4 py-3 cursor-pointer transition-colors duration-200",
+                  hoveredItem === option.id ? "bg-gray-50" : "hover:bg-gray-50",
+                  index < filterOptions.length - 1 && "border-b border-gray-100"
+                )}
+                onClick={() => onAddFilter(option.id)}
+              >
+                {/* Left side - Icon and Label */}
+                <div className="flex items-center space-x-3">
+                  <div className="text-gray-600">
+                    {option.icon}
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">
+                    {option.label}
+                  </span>
+                </div>
+
+                {/* Right side - Add button */}
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="w-6 h-6 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddFilter(option.id);
+                  }}
+                >
+                  <Plus className="w-3 h-3 text-gray-600" />
+                </motion.button>
+              </motion.div>
+            ))}
           </div>
 
-          <AnimatePresence>
-            {isOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-                className="absolute z-50 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-60 overflow-hidden"
-              >
-                {searchable && (
-                  <div className="p-2 border-b border-border">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text-secondary" />
-                      <input
-                        ref={searchRef}
-                        type="text"
-                        placeholder="Search options..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div className="max-h-48 overflow-y-auto">
-                  {filteredOptions.length === 0 ? (
-                    <div className="px-3 py-2 text-sm text-text-secondary">
-                      No options found
-                    </div>
-                  ) : (
-                    filteredOptions.map((option) => (
-                      <div
-                        key={option.value}
-                        className={cn(
-                          'px-3 py-2 text-sm cursor-pointer transition-colors',
-                          'hover:bg-background-alt',
-                          selectedOptions.includes(option.value) && 'bg-primary text-white hover:bg-primary-hover',
-                          option.disabled && 'opacity-50 cursor-not-allowed hover:bg-transparent'
-                        )}
-                        onClick={() => !option.disabled && handleOptionClick(option.value)}
-                      >
-                        {option.label}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Clear All Button */}
+          <div className="border-t border-gray-100 p-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onClearAll}
+              className="flex items-center space-x-2 text-red-500 hover:text-red-600 text-sm font-medium transition-colors duration-200"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Limpiar Todo Los Campos</span>
+            </motion.button>
+          </div>
         </div>
-
-        {error && (
-          <p className="mt-1 text-sm text-danger">
-            {error}
-          </p>
-        )}
-      </div>
-    );
-  }
-);
-
-FilterDropdown.displayName = 'FilterDropdown';
-
-export { FilterDropdown, filterDropdownVariants };
+      </motion.div>
+    </AnimatePresence>
+  );
+};
