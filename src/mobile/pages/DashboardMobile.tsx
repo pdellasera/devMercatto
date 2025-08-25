@@ -18,8 +18,7 @@ import {
   ChevronRight,
   Grid3X3,
   List,
-  RefreshCw,
-  ArrowUp
+  RefreshCw
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { 
@@ -472,114 +471,22 @@ export const DashboardMobile: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white">
-      {/* Skip links para navegación rápida */}
-      <a href="#main-content" className="skip-link sr-only">
-        Saltar al contenido principal
-      </a>
-      <a href="#prospects-list" className="skip-link sr-only">
-        Saltar a la lista de prospectos
-      </a>
-      <a href="#search" className="skip-link sr-only">
-        Saltar a la búsqueda
-      </a>
-      <a href="#accessibility-settings" className="skip-link sr-only">
-        Saltar a configuración de accesibilidad
-      </a>
-
-      {/* Header */}
-      <div id="main-content" className="sticky top-0 z-30 bg-neutral-950/95 backdrop-blur-md border-b border-white/10 px-mobile-lg py-mobile-md">
-        <div className="flex items-center justify-between mb-mobile-md">
-          <h1 className="text-mobile-lg font-bold mobile-text-optimized">
-            Dashboard
-          </h1>
-          <MobileHapticButton
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            hapticType="click"
-            soundType="click"
-            className="p-mobile-sm rounded-mobile-lg bg-neutral-800 hover:bg-neutral-700 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw 
-              className={cn(
-                'w-4 h-4 text-neutral-300',
-                isRefreshing && 'animate-spin'
-              )} 
-            />
-          </MobileHapticButton>
-        </div>
-
-        {/* Búsqueda */}
-        <div className="relative mb-mobile-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-          <input
-            id="search"
-            type="text"
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            placeholder="Buscar prospectos..."
-            className="w-full pl-10 pr-4 py-mobile-sm bg-neutral-900 border border-white/20 rounded-mobile-lg text-white placeholder-neutral-400 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 mobile-text-optimized"
-            aria-label="Buscar prospectos por nombre, club o posición"
-          />
-        </div>
-
-        {/* Filtros */}
-        <div className="flex items-center gap-mobile-sm overflow-x-auto pb-mobile-xs">
-          <select
-            value={selectedPosition}
-            onChange={(e) => handlePositionFilter(e.target.value)}
-            className="px-mobile-md py-mobile-sm bg-neutral-900 border border-white/20 rounded-mobile-lg text-white mobile-text-optimized focus:outline-none focus:border-primary-500"
-          >
-            {positionOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={selectedStatus}
-            onChange={(e) => handleStatusFilter(e.target.value)}
-            className="px-mobile-md py-mobile-sm bg-neutral-900 border border-white/20 rounded-mobile-lg text-white mobile-text-optimized focus:outline-none focus:border-primary-500"
-          >
-            {statusOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-
-          <MobileButton
-            size="sm"
-            variant="outline"
-            onClick={() => setViewMode(viewMode === 'table' ? 'grid' : 'table')}
-            className="flex-shrink-0"
-          >
-            {viewMode === 'table' ? (
-              <Grid3X3 className="w-3 h-3 mr-mobile-xs" />
-            ) : (
-              <List className="w-3 h-3 mr-mobile-xs" />
-            )}
-            {viewMode === 'table' ? 'Cuadrícula' : 'Lista'}
-          </MobileButton>
-        </div>
-      </div>
-
+    <div className="min-h-screen">
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="px-mobile-lg py-mobile-md"
+        className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8 py-2"
       >
         {/* Authentication Notice */}
         {!isAuthenticated && (
-          <motion.div variants={itemVariants} className="mb-mobile-lg">
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-mobile-lg p-mobile-md">
-              <div className="flex items-center gap-mobile-sm">
-                <UserPlus className="w-4 h-4 text-blue-400" />
+          <motion.div variants={itemVariants} className="mb-8">
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <UserPlus className="w-5 h-5 text-blue-400" />
                 <div className="flex-1">
-                  <h3 className="text-mobile-sm font-medium text-blue-300">¿Quieres contactar atletas?</h3>
-                  <p className="text-mobile-xs text-blue-200 mt-mobile-xs">
+                  <h3 className="text-sm font-medium text-blue-300">¿Quieres contactar atletas?</h3>
+                  <p className="text-xs text-blue-200 mt-1">
                     Inicia sesión para contactar prospectos y acceder a funciones avanzadas.
                   </p>
                 </div>
@@ -597,12 +504,12 @@ export const DashboardMobile: React.FC = () => {
 
         {/* Table Section */}
         <motion.div variants={itemVariants}>
-          <div className="glass-card p-mobile-lg">
+          <div className="glass-card p-8">
             {/* Header simplificado */}
-            <div className="flex items-center justify-between mb-mobile-lg">
+            <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-mobile-lg font-bold text-white mb-1">Lista de Prospectos</h3>
-                <div className="text-gray-300 text-mobile-sm">
+                <h3 className="text-2xl font-bold text-white mb-1">Lista de Prospectos</h3>
+                <div className="text-gray-300 text-sm">
                   {loading ? (
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
@@ -623,7 +530,7 @@ export const DashboardMobile: React.FC = () => {
                     {columns.map((column) => (
                       <th
                         key={column.key}
-                        className="text-left py-mobile-sm px-mobile-sm text-mobile-xs font-medium text-gray-300"
+                        className="text-left py-3 px-3 text-xs font-medium text-gray-300"
                       >
                         {column.header}
                       </th>
@@ -636,7 +543,7 @@ export const DashboardMobile: React.FC = () => {
                     Array.from({ length: 5 }).map((_, index) => (
                       <tr key={index} className="border-b border-white/5">
                         {columns.map((column) => (
-                          <td key={column.key} className="py-mobile-sm px-mobile-sm">
+                          <td key={column.key} className="py-3 px-3">
                             <MobileSkeleton
                               variant="text"
                               className="h-4 w-full"
@@ -647,7 +554,7 @@ export const DashboardMobile: React.FC = () => {
                     ))
                   ) : error ? (
                     <tr>
-                      <td colSpan={columns.length} className="py-mobile-lg text-center">
+                      <td colSpan={columns.length} className="py-8 text-center">
                         <MobileLoadingPlaceholder
                           type="error"
                           title="Error al cargar prospectos"
@@ -659,7 +566,7 @@ export const DashboardMobile: React.FC = () => {
                     </tr>
                   ) : (prospects?.length || 0) === 0 ? (
                     <tr>
-                      <td colSpan={columns.length} className="py-mobile-lg text-center">
+                      <td colSpan={columns.length} className="py-8 text-center">
                         <MobileLoadingPlaceholder
                           type="no-results"
                           title="No se encontraron prospectos"
@@ -681,7 +588,7 @@ export const DashboardMobile: React.FC = () => {
                         className="border-b border-white/5 hover:bg-white/5 transition-colors"
                       >
                         {columns.map((column) => (
-                          <td key={column.key} className="py-mobile-sm px-mobile-sm">
+                          <td key={column.key} className="py-3 px-3">
                             {column.accessor(prospect)}
                           </td>
                         ))}
@@ -696,10 +603,10 @@ export const DashboardMobile: React.FC = () => {
 
         {/* Enhanced Pagination */}
         {prospects && prospects.length > 0 && pagination.totalPages && pagination.totalPages > 1 && (
-          <motion.div variants={itemVariants} className="mt-mobile-lg">
-            <div className="glass-card p-mobile-lg">
+          <motion.div variants={itemVariants} className="mt-8">
+            <div className="glass-card p-6">
               <div className="flex items-center justify-between">
-                <div className="text-mobile-xs text-gray-300">
+                <div className="text-sm text-gray-300">
                   Mostrando <span className="font-semibold text-white">{(pagination.page - 1) * pagination.limit + 1}</span> a{' '}
                   <span className="font-semibold text-white">
                     {Math.min(pagination.page * pagination.limit, pagination.total)}
@@ -707,7 +614,7 @@ export const DashboardMobile: React.FC = () => {
                   de <span className="font-semibold text-white">{pagination.total}</span> prospectos
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-4">
                   <MobileButton
                     variant="outline"
                     size="sm"
@@ -715,19 +622,19 @@ export const DashboardMobile: React.FC = () => {
                     disabled={pagination.page <= 1}
                     onClick={() => setPage(pagination.page - 1)}
                   >
-                    <ChevronLeft className="w-3 h-3 mr-1" />
+                    <ChevronLeft className="w-4 h-4 mr-2" />
                     Anterior
                   </MobileButton>
 
-                  <div className="flex items-center space-x-1">
-                    {Array.from({ length: Math.min(3, pagination.totalPages || 1) }, (_, i) => {
+                  <div className="flex items-center space-x-2">
+                    {Array.from({ length: Math.min(5, pagination.totalPages || 1) }, (_, i) => {
                       const pageNum = i + 1;
                       return (
                         <MobileButton
                           key={pageNum}
                           variant={pageNum === pagination.page ? 'primary' : 'outline'}
                           size="sm"
-                          className="glass-button w-8 h-8 p-0 text-mobile-xs"
+                          className="glass-button w-10 h-10 p-0"
                           onClick={() => setPage(pageNum)}
                         >
                           {pageNum}
@@ -744,74 +651,13 @@ export const DashboardMobile: React.FC = () => {
                     onClick={() => setPage(pagination.page + 1)}
                   >
                     Siguiente
-                    <ChevronRight className="w-3 h-3 ml-1" />
+                    <ChevronRight className="w-4 h-4 ml-2" />
                   </MobileButton>
                 </div>
               </div>
             </div>
           </motion.div>
         )}
-
-        {/* Botón flotante para scroll to top */}
-        <MobileHapticButton
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          hapticType="click"
-          soundType="click"
-          className="fixed bottom-24 right-mobile-lg z-40 p-mobile-md bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-mobile-lg transition-all duration-200"
-        >
-          <ArrowUp className="w-5 h-5" />
-        </MobileHapticButton>
-
-        {/* Indicador de estado offline */}
-        <MobileOfflineIndicator
-          isOnline={offlineState.isOnline}
-          isOffline={offlineState.isOffline}
-          isSyncing={offlineState.isSyncing}
-          syncQueue={offlineState.syncQueue}
-          lastSync={offlineState.lastSync}
-          syncError={offlineState.syncError}
-          connectionType={offlineState.connectionType}
-          connectionQuality={offlineState.connectionQuality}
-          onManualSync={offlineState.performSync}
-          className="fixed bottom-20 left-mobile-lg right-mobile-lg z-40"
-          showDetails={false}
-        />
-
-        {/* Componentes de Accesibilidad */}
-        <MobileSkipLinks
-          onSkip={(linkId) => {
-            console.log('Skip to:', linkId);
-            announceToScreenReader(`Saltado a ${linkId}`);
-          }}
-        />
-
-        <MobileErrorAnnouncer
-          onErrorAnnounced={(error) => {
-            console.log('Error announced:', error);
-          }}
-          onErrorDismissed={(errorId) => {
-            console.log('Error dismissed:', errorId);
-          }}
-        />
-
-        {showAccessibilitySettings && (
-          <MobileAccessibilitySettings
-            className="fixed inset-0 z-50 flex items-center justify-center p-mobile-lg"
-            onClose={() => setShowAccessibilitySettings(false)}
-          />
-        )}
-
-        {/* Botón de accesibilidad flotante */}
-        <MobileHapticButton
-          onClick={() => setShowAccessibilitySettings(true)}
-          hapticType="click"
-          soundType="click"
-          className="fixed bottom-68 left-mobile-lg z-40 p-mobile-md bg-neutral-800 hover:bg-neutral-700 text-white rounded-full shadow-mobile-lg transition-all duration-200"
-          aria-label="Abrir configuración de accesibilidad"
-        >
-          <span className="sr-only">Accesibilidad</span>
-          <span className="text-mobile-lg">♿</span>
-        </MobileHapticButton>
 
         {/* Login Modal */}
         <LoginModal
@@ -826,5 +672,3 @@ export const DashboardMobile: React.FC = () => {
 };
 
 export default DashboardMobile;
-
-

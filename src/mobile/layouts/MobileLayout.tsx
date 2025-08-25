@@ -1,56 +1,29 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { cn } from '../utils/cn';
-import MobileHeader from '../components/navigation/MobileHeader';
-import MobileNavigation from '../components/navigation/MobileNavigation';
+import { motion } from 'framer-motion';
+import { MobileHeader } from './MobileHeader';
 
-interface MobileLayoutProps {
-  showHeader?: boolean;
-  showNavigation?: boolean;
-  className?: string;
-}
-
-const MobileLayout: React.FC<MobileLayoutProps> = ({
-  showHeader = true,
-  showNavigation = true,
-  className,
-}) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+export const MobileLayout: React.FC = () => {
   return (
-    <div className={cn('min-h-screen bg-neutral-950 text-neutral-100', className)}>
-      {/* Header */}
-      {showHeader && (
-        <MobileHeader
-          onMenuToggle={setIsMenuOpen}
-          onSearch={(query) => {
-            console.log('Search query:', query);
-            // Implementar lógica de búsqueda
-          }}
-        />
-      )}
+    <div className="min-h-screen bg-[#141414] flex flex-col">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-50">
+        <MobileHeader />
+      </div>
 
-      {/* Contenido principal */}
-      <main
-        className={cn(
-          'flex-1 overflow-auto',
-          showHeader ? 'pt-14' : '', // Espacio para header
-          showNavigation ? 'pb-20' : '', // Espacio para navegación inferior
-          'mobile-gesture-area'
-        )}
-      >
-        <Outlet />
-      </main>
-
-      {/* Navegación inferior */}
-      {showNavigation && (
-        <MobileNavigation
-          onTabChange={(tabId) => {
-            console.log('Tab changed to:', tabId);
-            // Implementar lógica de cambio de tab
-          }}
-        />
-      )}
+      <div className="flex flex-1">
+        {/* Main Content */}
+        <main className="flex-1">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="p-4 sm:p-6 lg:p-8"
+          >
+            <Outlet />
+          </motion.div>
+        </main>
+      </div>
     </div>
   );
 };
