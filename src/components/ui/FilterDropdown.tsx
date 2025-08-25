@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ChevronUp, 
-  ChevronDown, 
-  Percent, 
-  User, 
-  Ruler, 
-  Flame, 
+import {
+  ChevronUp,
+  ChevronDown,
+  Percent,
+  User,
+  Ruler,
+  Flame,
   Trash2,
   Plus
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { FilterModal } from './FilterModal';
 
 export interface FilterOption {
   id: string;
@@ -86,31 +87,52 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
   className
 }) => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [filterPosition, setFilterPosition] = useState({ x: 0, y: 0 });
+
+  const handleFilterClick = (filterId: string, event: React.MouseEvent) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setFilterPosition({
+      x: rect.right,
+      y: rect.top
+    });
+    setActiveFilter(filterId);
+  };
+
+  const handleFilterClose = () => {
+    setActiveFilter(null);
+  };
+
+  const handleFilterApply = (filterId: string, values: any) => {
+    console.log('Applying filter:', filterId, values);
+    onAddFilter(filterId);
+    setActiveFilter(null);
+  };
 
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
-             <motion.div
-         initial={{ opacity: 0, y: -10, scale: 0.95 }}
-         animate={{ opacity: 1, y: 0, scale: 1 }}
-         exit={{ opacity: 0, y: -10, scale: 0.95 }}
-         transition={{ duration: 0.2, ease: "easeOut" }}
-         className={cn(
-           "absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50",
-           "before:content-[''] before:absolute before:top-0 before:right-4 before:w-0 before:h-0",
-           "before:border-l-[8px] before:border-r-[8px] before:border-b-[8px] before:border-l-transparent before:border-r-transparent before:border-b-white",
-           "before:-translate-y-full before:translate-x-0",
-           "after:content-[''] after:absolute after:top-0 after:right-4 after:w-0 after:h-0",
-           "after:border-l-[9px] after:border-r-[9px] after:border-b-[9px] after:border-l-transparent after:border-r-transparent after:border-b-gray-200",
-           "after:-translate-y-full after:translate-x-0 after:-translate-x-[1px]",
-           className
-         )}
-       >
+      <motion.div
+        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className={cn(
+          "absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50",
+          "before:content-[''] before:absolute before:top-0 before:right-4 before:w-0 before:h-0",
+          "before:border-l-[8px] before:border-r-[8px] before:border-b-[8px] before:border-l-transparent before:border-r-transparent before:border-b-white",
+          "before:-translate-y-full before:translate-x-0",
+          "after:content-[''] after:absolute after:top-0 after:right-4 after:w-0 after:h-0",
+          "after:border-l-[9px] after:border-r-[9px] after:border-b-[9px] after:border-l-transparent after:border-r-transparent after:border-b-gray-200",
+          "after:-translate-y-full after:translate-x-0 after:-translate-x-[1px]",
+          className
+        )}
+      >
         {/* Dropdown Content */}
         <div className="p-0">
-                     {/* Filter Options List */}
-           <div className="overflow-y-auto">
+          {/* Filter Options List */}
+          <div className="overflow-y-auto">
             {filterOptions.map((option, index) => (
               <motion.div
                 key={option.id}
@@ -124,7 +146,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
                   hoveredItem === option.id ? "bg-gray-50" : "hover:bg-gray-50",
                   index < filterOptions.length - 1 && "border-b border-gray-100"
                 )}
-                onClick={() => onAddFilter(option.id)}
+                onClick={(e) => handleFilterClick(option.id, e)}
               >
                 {/* Left side - Icon and Label */}
                 <div className="flex items-center space-x-3">
@@ -143,7 +165,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
                   className="w-6 h-6 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onAddFilter(option.id);
+                    handleFilterClick(option.id, e);
                   }}
                 >
                   <Plus className="w-3 h-3 text-gray-600" />
@@ -163,9 +185,22 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
               <Trash2 className="w-4 h-4" />
               <span>Limpiar Todo Los Campos</span>
             </motion.button>
-          </div>
-        </div>
-      </motion.div>
-    </AnimatePresence>
-  );
-};
+                     </div>
+         </div>
+       </motion.div>
+
+       {/* Filter Modal */}
+       {activeFilter && (
+         <FilterModal
+           isOpen={!!activeFilter}
+           filterId={activeFilter}
+           filterLabel={filterOptions.find(opt => opt.id === activeFilter)?.label || ''}
+           filterType={filterOptions.find(opt => opt.id === activeFilter)?.type || 'range'}
+           onClose={handleFilterClose}
+           onApply={handleFilterApply}
+           position={filterPosition}
+         />
+       )}
+     </AnimatePresence>
+   );
+ };
