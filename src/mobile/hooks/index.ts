@@ -20,6 +20,9 @@ export { useMobileNavigation } from './navigation/useMobileNavigation';
 // Hooks de performance
 export { useMobilePerformance } from './performance/useMobilePerformance';
 
+// Hooks de loading
+export { default as useMobileLoading } from './useMobileLoading';
+
 // Tipos comunes
 export type {
   BreakpointState,

@@ -13,10 +13,17 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { cn } from '../utils/cn';
-import { useMobilePerformance, useMobileGestures } from '../hooks';
+import { useMobilePerformance, useMobileGestures, useMobileLoading } from '../hooks';
 import MobileButton from '../components/ui/MobileButton';
 import { MobileFilters, FilterModalMobile } from '../components/filters';
-import { PullToRefreshIndicator, SwipeableContainer } from '../components/ui';
+import { 
+  PullToRefreshIndicator, 
+  SwipeableContainer,
+  MobileSkeleton,
+  MobileLoadingSpinner,
+  MobileLoadingOverlay,
+  MobileLoadingPlaceholder
+} from '../components/ui';
 
 interface Prospect {
   id: string;
@@ -81,19 +88,18 @@ const ProspectsMobile: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { useLazyLoad, throttle } = useMobilePerformance();
 
+  // Función para cargar prospectos
+  const loadProspects = async () => {
+    // Simular carga de API
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const mockData = generateMockProspects(50);
+    setProspects(mockData);
+    setFilteredProspects(mockData);
+  };
+
   // Generar datos mock al cargar
   useEffect(() => {
-    const loadProspects = async () => {
-      setLoading(true);
-      // Simular carga de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const mockData = generateMockProspects(50);
-      setProspects(mockData);
-      setFilteredProspects(mockData);
-      setLoading(false);
-    };
-
-    loadProspects();
+    loadingState.withLoading(loadProspects());
   }, []);
 
   // Filtrar prospectos
@@ -224,6 +230,16 @@ const ProspectsMobile: React.FC = () => {
   const [isPulling, setIsPulling] = useState(false);
   const [pullProgress, setPullProgress] = useState(0);
   const [isGestureRefreshing, setIsGestureRefreshing] = useState(false);
+
+  // Hook de loading para gestionar estados de carga
+  const loadingState = useMobileLoading({
+    initialLoading: true,
+    maxRetries: 3,
+    retryDelay: 2000,
+    onRetry: async () => {
+      await loadProspects();
+    },
+  });
 
   const handleFiltersApply = (filters: Record<string, any>) => {
     setActiveFilters(filters);
@@ -385,34 +401,38 @@ const ProspectsMobile: React.FC = () => {
             ref={containerRef}
             className="space-y-mobile-md"
           >
-        {loading ? (
-          // Skeleton loading
+        {loadingState.isLoading ? (
+          // Skeleton loading mejorado
           Array.from({ length: 10 }).map((_, index) => (
-            <div
+            <MobileSkeleton
               key={index}
-              className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-mobile-lg p-mobile-lg animate-pulse"
-            >
-              <div className="flex items-center gap-mobile-md">
-                <div className="w-12 h-12 bg-neutral-700 rounded-mobile-lg" />
-                <div className="flex-1 space-y-mobile-xs">
-                  <div className="h-4 bg-neutral-700 rounded w-3/4" />
-                  <div className="h-3 bg-neutral-700 rounded w-1/2" />
-                </div>
-                <div className="w-8 h-8 bg-neutral-700 rounded" />
-              </div>
-            </div>
+              variant="prospect-card"
+              className="animate-mobile-slide-up"
+            />
           ))
+        ) : loadingState.isError ? (
+          // Estado de error
+          <MobileLoadingPlaceholder
+            type="error"
+            title="Error al cargar prospectos"
+            description={loadingState.error || 'Hubo un problema al cargar los datos'}
+            actionText="Reintentar"
+            onAction={loadingState.retry}
+          />
         ) : visibleItems.length === 0 ? (
           // Estado vacío
-          <div className="text-center py-mobile-xl">
-            <Users className="w-16 h-16 text-neutral-600 mx-auto mb-mobile-md" />
-            <h3 className="text-mobile-lg font-semibold text-neutral-300 mb-mobile-sm">
-              No se encontraron prospectos
-            </h3>
-            <p className="text-neutral-500 text-mobile-sm">
-              Intenta ajustar los filtros o la búsqueda
-            </p>
-          </div>
+          <MobileLoadingPlaceholder
+            type="no-results"
+            title="No se encontraron prospectos"
+            description="Intenta ajustar los filtros o la búsqueda para encontrar más prospectos"
+            actionText="Limpiar filtros"
+            onAction={() => {
+              setSearchQuery('');
+              setSelectedPosition('all');
+              setShowFavorites(false);
+              setActiveFilters({});
+            }}
+          />
         ) : (
           // Lista de prospectos
           visibleItems.map((prospect, index) => (
@@ -543,10 +563,12 @@ const ProspectsMobile: React.FC = () => {
         {/* Loading indicator para infinite scroll */}
         {hasMore && (
           <div ref={loadingRef} className="text-center py-mobile-lg">
-            <div className="inline-flex items-center gap-mobile-sm text-neutral-400">
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              <span className="text-mobile-sm">Cargando más prospectos...</span>
-            </div>
+            <MobileLoadingSpinner
+              size="sm"
+              variant="secondary"
+              text="Cargando más prospectos..."
+              showText
+            />
           </div>
         )}
           </div>
@@ -578,6 +600,15 @@ const ProspectsMobile: React.FC = () => {
           { id: '3', label: 'Opción 3', value: 'option3' },
         ]}
         type="single"
+      />
+
+      {/* Overlay de loading para refresh */}
+      <MobileLoadingOverlay
+        isVisible={isGestureRefreshing}
+        text="Actualizando prospectos..."
+        variant="overlay"
+        spinnerSize="lg"
+        spinnerVariant="primary"
       />
     </div>
   );
