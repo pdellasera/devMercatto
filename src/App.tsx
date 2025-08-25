@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import mobileRoutes from './mobile';
 import { ThemeProvider } from './design-system/theme/ThemeProvider';
 import { useAuth } from './hooks/useAuth';
 import { Login } from './pages/Login';
@@ -77,6 +78,18 @@ function App() {
               path="/"
               element={<Navigate to="/dashboard" replace />}
             />
+
+            {/* Mobile routes */}
+            <Route path={mobileRoutes.path as string} element={mobileRoutes.element}>
+              {mobileRoutes.children?.map((child, idx) => (
+                <Route
+                  key={idx}
+                  index={child.index as boolean | undefined}
+                  path={child.path}
+                  element={child.element as React.ReactElement}
+                />)
+              )}
+            </Route>
 
             {/* Catch all route */}
             <Route
