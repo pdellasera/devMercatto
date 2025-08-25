@@ -16,6 +16,7 @@ import { cn } from '../utils/cn';
 import { useMobilePerformance, useMobileGestures } from '../hooks';
 import MobileButton from '../components/ui/MobileButton';
 import { MobileFilters, FilterModalMobile } from '../components/filters';
+import { PullToRefreshIndicator, SwipeableContainer } from '../components/ui';
 
 interface Prospect {
   id: string;
@@ -75,6 +76,7 @@ const ProspectsMobile: React.FC = () => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+  const [currentView, setCurrentView] = useState<'list' | 'grid' | 'map'>('list');
   
   const containerRef = useRef<HTMLDivElement>(null);
   const { useLazyLoad, throttle } = useMobilePerformance();
@@ -218,6 +220,11 @@ const ProspectsMobile: React.FC = () => {
     setIsRefreshing(false);
   };
 
+  // Configurar pull-to-refresh manual
+  const [isPulling, setIsPulling] = useState(false);
+  const [pullProgress, setPullProgress] = useState(0);
+  const [isGestureRefreshing, setIsGestureRefreshing] = useState(false);
+
   const handleFiltersApply = (filters: Record<string, any>) => {
     setActiveFilters(filters);
   };
@@ -225,6 +232,18 @@ const ProspectsMobile: React.FC = () => {
   const handleFilterModalApply = (value: any) => {
     // Aquí puedes manejar filtros específicos si es necesario
     console.log('Filter modal applied:', value);
+  };
+
+  // Manejar pull-to-refresh
+  const handlePullToRefresh = async () => {
+    setIsGestureRefreshing(true);
+    await handleRefresh();
+    setIsGestureRefreshing(false);
+  };
+
+  // Manejar cambio de vista
+  const handleViewChange = (view: 'list' | 'grid' | 'map') => {
+    setCurrentView(view);
   };
 
   // Scroll to top
@@ -247,9 +266,16 @@ const ProspectsMobile: React.FC = () => {
   };
 
   const positions = ['all', 'Delantero', 'Centrocampista', 'Defensa', 'Portero'];
+  const viewSections = ['Lista', 'Cuadrícula', 'Mapa'];
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
+      {/* Indicador de Pull-to-Refresh */}
+      <PullToRefreshIndicator
+        progress={pullProgress}
+        isRefreshing={isGestureRefreshing}
+        className="absolute top-0 left-0 right-0 z-40"
+      />
       {/* Header */}
       <div className="sticky top-14 z-30 bg-neutral-950/95 backdrop-blur-md border-b border-white/10 px-mobile-lg py-mobile-md">
         <div className="flex items-center justify-between mb-mobile-md">
@@ -330,14 +356,35 @@ const ProspectsMobile: React.FC = () => {
               </span>
             )}
           </MobileButton>
+
+          <MobileButton
+            size="sm"
+            variant="outline"
+            onClick={handlePullToRefresh}
+            disabled={isGestureRefreshing}
+            className="flex-shrink-0"
+          >
+            <RefreshCw className={cn('w-3 h-3 mr-mobile-xs', isGestureRefreshing && 'animate-spin')} />
+            Actualizar
+          </MobileButton>
         </div>
       </div>
 
-      {/* Lista de Prospectos */}
-      <div 
-        ref={containerRef}
-        className="px-mobile-lg py-mobile-md space-y-mobile-md"
-      >
+              {/* Contenedor Swipeable para diferentes vistas */}
+        <SwipeableContainer
+          sections={viewSections}
+          currentSection={currentView === 'list' ? 0 : currentView === 'grid' ? 1 : 2}
+          onSectionChange={(index) => {
+            const views: ('list' | 'grid' | 'map')[] = ['list', 'grid', 'map'];
+            handleViewChange(views[index]);
+          }}
+          className="px-mobile-lg py-mobile-md"
+        >
+          {/* Lista de Prospectos */}
+          <div 
+            ref={containerRef}
+            className="space-y-mobile-md"
+          >
         {loading ? (
           // Skeleton loading
           Array.from({ length: 10 }).map((_, index) => (
@@ -502,7 +549,8 @@ const ProspectsMobile: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
+          </div>
+        </SwipeableContainer>
 
       {/* Botón flotante para scroll to top */}
       <button
