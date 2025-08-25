@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Volume2, VolumeX, Smartphone, SmartphoneOff, TestTube } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Smartphone, TestTube } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import useMobileHaptic from '../../hooks/useMobileHaptic';
 
@@ -147,7 +147,7 @@ const MobileHapticSettings: React.FC<MobileHapticSettingsProps> = ({
               {hapticEnabled ? (
                 <Smartphone className="w-4 h-4 text-green-400" />
               ) : (
-                <SmartphoneOff className="w-4 h-4 text-neutral-400" />
+                                        <Smartphone className="w-4 h-4 text-neutral-400" />
               )}
               <span className="text-mobile-sm">Vibración</span>
             </div>
