@@ -91,16 +91,22 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: -10, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -10, scale: 0.95 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
-        className={cn(
-          "absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50",
-          className
-        )}
-      >
+             <motion.div
+         initial={{ opacity: 0, y: -10, scale: 0.95 }}
+         animate={{ opacity: 1, y: 0, scale: 1 }}
+         exit={{ opacity: 0, y: -10, scale: 0.95 }}
+         transition={{ duration: 0.2, ease: "easeOut" }}
+         className={cn(
+           "absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50",
+           "before:content-[''] before:absolute before:top-0 before:right-4 before:w-0 before:h-0",
+           "before:border-l-[8px] before:border-r-[8px] before:border-b-[8px] before:border-l-transparent before:border-r-transparent before:border-b-white",
+           "before:-translate-y-full before:translate-x-0",
+           "after:content-[''] after:absolute after:top-0 after:right-4 after:w-0 after:h-0",
+           "after:border-l-[9px] after:border-r-[9px] after:border-b-[9px] after:border-l-transparent after:border-r-transparent after:border-b-gray-200",
+           "after:-translate-y-full after:translate-x-0 after:-translate-x-[1px]",
+           className
+         )}
+       >
         {/* Dropdown Content */}
         <div className="p-0">
           {/* Filter Options List */}
