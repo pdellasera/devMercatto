@@ -186,76 +186,75 @@ export const Dashboard: React.FC = () => {
     {
       key: 'nombre',
       header: 'Jugador',
-             accessor: (prospect: Prospect) => (
-         <div className="flex items-center space-x-3 py-2 hover:bg-white/5 transition-all duration-200 rounded-lg px-1">
-           {/* Avatar con indicador de estado */}
-           <div className="relative flex-shrink-0">
-             <Avatar
-               src={prospect.imgData}
-               fallback={prospect.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-               size="md"
-               className="ring-2 ring-white/10 shadow-lg"
-             />
-             {/* Indicador de estado premium */}
-             {prospect.fullaccess && (
-               <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                 <span className="text-[6px] font-bold text-black">★</span>
-               </div>
-             )}
-           </div>
-           
-           {/* Información del jugador - Layout compacto */}
-           <div className="flex-1 min-w-0">
-             {/* Primera línea: Nombre, edad y posición */}
-             <div className="flex items-center space-x-2 mb-1">
-               <h3 className="font-bold text-white text-sm leading-tight truncate">
-                 {prospect.name}
-               </h3>
-               <span className="text-xs text-gray-400 bg-gray-700/50 px-1.5 py-0.5 rounded-full">
-                 {prospect.age} años
-               </span>
-               <div className="flex items-center space-x-1">
-                 <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                 <span className="text-xs text-gray-300 font-medium">
-                   {prospect.position}
-                 </span>
-               </div>
-             </div>
-             
-             {/* Segunda línea: Club y contrato en línea */}
-             <div className="flex items-center space-x-3 text-xs">
-               <div className="flex items-center space-x-1">
-                 <span className="text-gray-400">Club:</span>
-                 <span className="text-white font-semibold bg-gray-700/50 px-1.5 py-0.5 rounded-full">
-                   {prospect.status || 'Sin club'}
-                 </span>
-               </div>
-               <div className="flex items-center space-x-1">
-                 <span className="text-gray-400">Contrato:</span>
-                 <span className="text-white font-semibold">
-                   {prospect.birthdayDate ? new Date(prospect.birthdayDate).toLocaleDateString('es-ES') : 'Sin fecha'}
-                 </span>
-               </div>
-             </div>
-             
-             {/* Tercera línea: Badges de estado */}
-             <div className="flex items-center space-x-2 mt-1">
-               {prospect.fullaccess && (
-                 <span className="text-[9px] bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-1.5 py-0.5 rounded-full font-bold shadow-sm">
-                   PREMIUM
-                 </span>
-               )}
-               <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${
-                 prospect.status === 'Contratado' 
-                   ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                   : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-               }`}>
-                 {prospect.status === 'Contratado' ? 'ACTIVO' : 'PENDIENTE'}
-               </span>
-             </div>
-           </div>
-         </div>
-       ),
+      accessor: (prospect: Prospect) => (
+        <div className="flex items-center space-x-3 py-2 hover:bg-white/5 transition-all duration-200 rounded-lg px-1">
+          {/* Avatar con indicador de estado */}
+          <div className="relative flex-shrink-0">
+            <Avatar
+              src={prospect.imgData}
+              fallback={prospect.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+              size="md"
+              className="ring-2 ring-white/10 shadow-lg"
+            />
+            {/* Indicador de estado premium */}
+            {prospect.fullaccess && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-[6px] font-bold text-black">★</span>
+              </div>
+            )}
+          </div>
+
+          {/* Información del jugador - Layout compacto */}
+          <div className="flex-1 min-w-0">
+            {/* Primera línea: Nombre, edad y posición */}
+            <div className="flex items-center space-x-2 mb-1">
+              <h3 className="font-bold text-white text-sm leading-tight truncate">
+                {prospect.name}
+              </h3>
+              <span className="text-xs text-gray-400 bg-gray-700/50 px-1.5 py-0.5 rounded-full">
+                {prospect.age} años
+              </span>
+              <div className="flex items-center space-x-1">
+                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                <span className="text-xs text-gray-300 font-medium">
+                  {prospect.position}
+                </span>
+              </div>
+            </div>
+
+            {/* Segunda línea: Club y contrato en línea */}
+            <div className="flex items-center space-x-3 text-xs">
+              <div className="flex items-center space-x-1">
+                <span className="text-gray-400">Club:</span>
+                <span className="text-white font-semibold bg-gray-700/50 px-1.5 py-0.5 rounded-full">
+                  {prospect.status || 'Sin club'}
+                </span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <span className="text-gray-400">Contrato:</span>
+                <span className="text-white font-semibold">
+                  {prospect.birthdayDate ? new Date(prospect.birthdayDate).toLocaleDateString('es-ES') : 'Sin fecha'}
+                </span>
+              </div>
+            </div>
+
+            {/* Tercera línea: Badges de estado */}
+            <div className="flex items-center space-x-2 mt-1">
+              {prospect.fullaccess && (
+                <span className="text-[9px] bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-1.5 py-0.5 rounded-full font-bold shadow-sm">
+                  PREMIUM
+                </span>
+              )}
+              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${prospect.status === 'Contratado'
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                  : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                }`}>
+                {prospect.status === 'Contratado' ? 'ACTIVO' : 'PENDIENTE'}
+              </span>
+            </div>
+          </div>
+        </div>
+      ),
     },
     {
       key: 'yearOfbirth',
@@ -289,10 +288,10 @@ export const Dashboard: React.FC = () => {
         return (
           <div className="text-center flex items-center justify-center">
             <div className={`font-semibold text-sm px-2 py-1 rounded-sm max-w-20 w-20 text-center ${overall === 0 ? 'text-gray-400 bg-gray-400/2' :
-                overall >= 90 ? 'text-green-400 bg-green-400/2' :
-                  overall >= 70 ? 'text-yellow-400 bg-yellow-400/2' :
-                    overall >= 60 ? 'text-orange-400 bg-orange-400/2' :
-                      'text-red-400 bg-red-400/2'
+              overall >= 90 ? 'text-green-400 bg-green-400/2' :
+                overall >= 70 ? 'text-yellow-400 bg-yellow-400/2' :
+                  overall >= 60 ? 'text-orange-400 bg-orange-400/2' :
+                    'text-red-400 bg-red-400/2'
               }`}>
               {overall === 0 ? '-' : `${overall}%`}
             </div>
@@ -307,10 +306,10 @@ export const Dashboard: React.FC = () => {
       accessor: (prospect: Prospect) => (
         <div className="text-center flex items-center justify-center">
           <div className={`font-semibold text-sm px-2 py-1 rounded-sm max-w-20 w-20 text-center ${prospect.ovrFisico === 0 ? 'text-gray-400 bg-gray-400/2' :
-              prospect.ovrFisico >= 90 ? 'text-green-400 bg-green-400/2' :
-                prospect.ovrFisico >= 70 ? 'text-yellow-400 bg-yellow-400/2' :
-                  prospect.ovrFisico >= 60 ? 'text-orange-400 bg-orange-400/2' :
-                    'text-red-400 bg-red-400/2'
+            prospect.ovrFisico >= 90 ? 'text-green-400 bg-green-400/2' :
+              prospect.ovrFisico >= 70 ? 'text-yellow-400 bg-yellow-400/2' :
+                prospect.ovrFisico >= 60 ? 'text-orange-400 bg-orange-400/2' :
+                  'text-red-400 bg-red-400/2'
             }`}>
             {prospect.ovrFisico === 0 ? '-' : prospect.ovrFisico}%
           </div>
@@ -324,10 +323,10 @@ export const Dashboard: React.FC = () => {
         <div className="text-center flex items-center justify-center">
           <div className="relative inline-block">
             <div className={`font-semibold text-sm px-2 py-1 rounded-sm max-w-20 w-20 text-center ${prospect.potencia === 0 ? 'text-gray-400 bg-gray-400/2' :
-                prospect.potencia >= 90 ? 'text-green-400 bg-green-400/2' :
-                  prospect.potencia >= 70 ? 'text-yellow-400 bg-yellow-400/2' :
-                    prospect.potencia >= 60 ? 'text-orange-400 bg-orange-400/2' :
-                      'text-red-400 bg-red-400/2'
+              prospect.potencia >= 90 ? 'text-green-400 bg-green-400/2' :
+                prospect.potencia >= 70 ? 'text-yellow-400 bg-yellow-400/2' :
+                  prospect.potencia >= 60 ? 'text-orange-400 bg-orange-400/2' :
+                    'text-red-400 bg-red-400/2'
               }`}>
               {prospect.potencia === 0 ? '-' : prospect.potencia}
             </div>
@@ -342,10 +341,10 @@ export const Dashboard: React.FC = () => {
       accessor: (prospect: Prospect) => (
         <div className="text-center">
           <div className={`font-semibold text-sm px-2 py-1 rounded-sm max-w-20 w-20 text-center ${prospect.resistencia === 0 ? 'text-gray-400 bg-gray-400/2' :
-              prospect.resistencia >= 90 ? 'text-green-400 bg-green-400/2' :
-                prospect.resistencia >= 70 ? 'text-yellow-400 bg-yellow-400/2' :
-                  prospect.resistencia >= 60 ? 'text-orange-400 bg-orange-400/2' :
-                    'text-red-400 bg-red-400/2'
+            prospect.resistencia >= 90 ? 'text-green-400 bg-green-400/2' :
+              prospect.resistencia >= 70 ? 'text-yellow-400 bg-yellow-400/2' :
+                prospect.resistencia >= 60 ? 'text-orange-400 bg-orange-400/2' :
+                  'text-red-400 bg-red-400/2'
             }`}>
             {prospect.resistencia === 0 ? '-' : `${prospect.resistencia}%`}
           </div>
@@ -358,10 +357,10 @@ export const Dashboard: React.FC = () => {
       accessor: (prospect: Prospect) => (
         <div className="text-center">
           <div className={`font-semibold text-sm px-2 py-1 rounded-sm max-w-20 w-20 text-center ${prospect.ovrTecnico === 0 ? 'text-gray-400 bg-gray-400/2' :
-              prospect.ovrTecnico >= 90 ? 'text-green-400 bg-green-400/2' :
-                prospect.ovrTecnico >= 70 ? 'text-yellow-400 bg-yellow-400/2' :
-                  prospect.ovrTecnico >= 60 ? 'text-orange-400 bg-orange-400/2' :
-                    'text-red-400 bg-red-400/2'
+            prospect.ovrTecnico >= 90 ? 'text-green-400 bg-green-400/2' :
+              prospect.ovrTecnico >= 70 ? 'text-yellow-400 bg-yellow-400/2' :
+                prospect.ovrTecnico >= 60 ? 'text-orange-400 bg-orange-400/2' :
+                  'text-red-400 bg-red-400/2'
             }`}>
             {prospect.ovrTecnico === 0 ? '-' : prospect.ovrTecnico}
           </div>
@@ -374,10 +373,10 @@ export const Dashboard: React.FC = () => {
       accessor: (prospect: Prospect) => (
         <div className="text-center">
           <div className={`font-semibold text-sm px-2 py-1 rounded-sm max-w-20 w-20 text-center ${prospect.overCompetencia === 0 ? 'text-gray-400 bg-gray-400/2' :
-              prospect.overCompetencia >= 90 ? 'text-green-400 bg-green-400/2' :
-                prospect.overCompetencia >= 70 ? 'text-yellow-400 bg-yellow-400/2' :
-                  prospect.overCompetencia >= 60 ? 'text-orange-400 bg-orange-400/2' :
-                    'text-red-400 bg-red-400/2'
+            prospect.overCompetencia >= 90 ? 'text-green-400 bg-green-400/2' :
+              prospect.overCompetencia >= 70 ? 'text-yellow-400 bg-yellow-400/2' :
+                prospect.overCompetencia >= 60 ? 'text-orange-400 bg-orange-400/2' :
+                  'text-red-400 bg-red-400/2'
             }`}>
             {prospect.overCompetencia === 0 ? '-' : prospect.overCompetencia}
           </div>
@@ -424,7 +423,7 @@ export const Dashboard: React.FC = () => {
           animate="visible"
           className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8 py-2"
         >
-     
+
           {/* Authentication Notice */}
           {!isAuthenticated && (
             <motion.div variants={itemVariants} className="mb-8">
@@ -438,97 +437,7 @@ export const Dashboard: React.FC = () => {
             </motion.div>
           )}
 
-          {/* Enhanced Filters Section */}
-          <motion.div variants={itemVariants} className="mb-4">
-            <div className="glass-card p-6 border border-white/5">
-              {/* Header with subtle gradient */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-8 bg-gradient-to-b from-blue-400 to-purple-500 rounded-full"></div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-white tracking-wide">
-                      Filtros de Búsqueda
-                    </h2>
-                    <p className="text-sm text-gray-400 mt-1">
-                      Encuentra el prospecto ideal para tu equipo
-                    </p>
-                  </div>
-                </div>
-
-                {/* Quick Stats */}
-                <div className="hidden md:flex items-center space-x-4 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                    <span className="text-gray-300">{pagination.total || 0} prospectos</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                    <span className="text-gray-300">{prospects?.length || 0} visibles</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Search and Actions Row */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-                {/* Search Bar */}
-                <div className="lg:col-span-2">
-                  <div className="relative">
-                    <SearchBar
-                      placeholder="Buscar por nombre, posición o club..."
-                      onSearch={handleSearch}
-                      value={searchQuery}
-                      className="w-full"
-                    />
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <Search className="w-4 h-4 text-gray-400" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex items-center justify-end gap-3">
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    className="glass-button bg-gray-700/30 hover:bg-gray-600/30 text-white flex-1"
-                  >
-                    <Filter className="w-4 h-4 mr-2" />
-                    Filtros
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="md"
-                    className="glass-button bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-lg shadow-blue-500/25 flex-1"
-                  >
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Invitar a Visoria
-                  </Button>
-                </div>
-              </div>
-
-              {/* Clear Filters Row */}
-              <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                <div className="flex items-center space-x-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="glass-button border-white/10 text-gray-300 hover:text-white hover:border-white/20"
-                    onClick={() => {
-                      setSearchQuery('');
-                      setSelectedPosition('');
-                      setSelectedStatus('');
-                      setFilters({ page: 1 });
-                    }}
-                  >
-                    Limpiar Filtros
-                  </Button>
-                  <span className="text-xs text-gray-500">
-                    {searchQuery ? 'Filtros activos' : 'Sin filtros'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          
 
           {/* Table Section */}
           <motion.div variants={itemVariants}>
@@ -536,7 +445,7 @@ export const Dashboard: React.FC = () => {
               <div className="flex items-center justify-between mb-8">
                 <div>
                   <h3 className="text-2xl font-bold text-white mb-2">Lista de Prospectos</h3>
-                  <p className="text-gray-300">
+                  <div className="text-gray-300">
                     {loading ? (
                       <div className="flex items-center space-x-2">
                         <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
@@ -545,7 +454,7 @@ export const Dashboard: React.FC = () => {
                     ) : (
                       `${prospects?.length || 0} prospectos encontrados`
                     )}
-                  </p>
+                  </div>
                 </div>
 
                 {/* View Mode Toggle */}
@@ -571,18 +480,28 @@ export const Dashboard: React.FC = () => {
 
 
 
-              <Table
-                data={prospects || []}
-                columns={columns}
-                loading={loading}
-                emptyMessage="No se encontraron prospectos"
-                className="w-full"
-                searchable={true}
-                searchPlaceholder="Buscar prospectos..."
-                striped={true}
-                hoverable={true}
-                compact={false}
-              />
+                             <Table
+                 data={prospects || []}
+                 columns={columns}
+                 loading={loading}
+                 emptyMessage="No se encontraron prospectos"
+                 className="w-full"
+                 searchable={true}
+                 searchPlaceholder="Buscar por nombre, posición o club..."
+                 striped={true}
+                 hoverable={true}
+                 compact={false}
+                 showFilters={true}
+                 onClearFilters={() => {
+                   setSearchQuery('');
+                   setSelectedPosition('');
+                   setSelectedStatus('');
+                   setFilters({ page: 1 });
+                 }}
+                 filterStatus={searchQuery ? 'Filtros activos' : 'Sin filtros'}
+                 totalItems={pagination.total || 0}
+                 visibleItems={prospects?.length || 0}
+               />
             </div>
           </motion.div>
 
@@ -644,18 +563,18 @@ export const Dashboard: React.FC = () => {
             </motion.div>
           )}
 
-                     {/* Login Modal */}
-           <LoginModal
-             isOpen={showLoginModal}
-             onClose={() => setShowLoginModal(false)}
-             onLogin={handleLogin}
-             onRegister={handleRegister}
-           />
+          {/* Login Modal */}
+          <LoginModal
+            isOpen={showLoginModal}
+            onClose={() => setShowLoginModal(false)}
+            onLogin={handleLogin}
+            onRegister={handleRegister}
+          />
 
-           {/* API Debugger - Temporal */}
-           <ApiDebugger />
-         </motion.div>
-       </div>
-     </MainLayout>
-   );
- };
+          {/* API Debugger - Temporal */}
+          <ApiDebugger />
+        </motion.div>
+      </div>
+    </MainLayout>
+  );
+};

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Loader2, Search, Filter } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Loader2, Search, Filter, UserPlus } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 export interface Column<T> {
@@ -39,6 +39,13 @@ export interface TableProps<T> {
   compact?: boolean;
   striped?: boolean;
   hoverable?: boolean;
+  // New filter props
+  showFilters?: boolean;
+  onClearFilters?: () => void;
+  filterStatus?: string;
+  onFilterChange?: (filters: any) => void;
+  totalItems?: number;
+  visibleItems?: number;
 }
 
 const Table = <T extends Record<string, any>>({
@@ -67,6 +74,13 @@ const Table = <T extends Record<string, any>>({
   compact = false,
   striped = true,
   hoverable = true,
+  // New filter props
+  showFilters = false,
+  onClearFilters,
+  filterStatus = 'Sin filtros',
+  onFilterChange,
+  totalItems = 0,
+  visibleItems = 0,
 }: TableProps<T>) => {
   const [searchQuery, setSearchQuery] = React.useState('');
 
@@ -130,28 +144,94 @@ const Table = <T extends Record<string, any>>({
 
   return (
     <div className="w-full space-y-4">
-      {/* Search Bar */}
-      {searchable && (
+      {/* Integrated Filters and Search Section */}
+      {(searchable || showFilters) && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative"
+          className="bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-xl border border-white/10 rounded-xl p-4"
         >
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/50" />
-            <input
-              type="text"
-              placeholder={searchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200"
-            />
+          <div className="flex items-center justify-between mb-4">
+            {/* Header with title and stats */}
+            <div className="flex items-center space-x-3">
+              <div className="w-2 h-8 bg-gradient-to-b from-blue-400 to-purple-500 rounded-full"></div>
+              <div>
+                <h3 className="text-lg font-semibold text-white tracking-wide">
+                  Filtros de Búsqueda
+                </h3>
+                <p className="text-sm text-gray-400 mt-1">
+                  Encuentra el prospecto ideal para tu equipo
+                </p>
+              </div>
+            </div>
+
+            {/* Clear Filters and Status */}
+            {showFilters && (
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={onClearFilters}
+                  className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white rounded-lg text-xs transition-all duration-200"
+                >
+                  Limpiar Filtros
+                </button>
+                <span className="text-xs text-gray-500">
+                  {filterStatus}
+                </span>
+              </div>
+            )}
           </div>
+
+          {/* Search and Actions Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Search Bar */}
+            {searchable && (
+              <div className="lg:col-span-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/50" />
+                  <input
+                    type="text"
+                    placeholder={searchPlaceholder}
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-3">
+              <button className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg text-sm transition-all duration-200 flex items-center space-x-2">
+                <Filter className="w-4 h-4" />
+                <span>Filtros</span>
+              </button>
+              <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg shadow-blue-500/25">
+                <UserPlus className="w-4 h-4" />
+                <span>Invitar a Visoria</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          {showFilters && (
+            <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-4">
+              <div className="flex items-center space-x-4 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <span className="text-gray-300">{totalItems} prospectos total</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                  <span className="text-gray-300">{visibleItems} visibles</span>
+                </div>
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
 
-             {/* Table Container */}
-       <div className={tableClasses}>
+      {/* Table Container */}
+      <div className={tableClasses}>
          <div className="overflow-x-auto max-w-full">
            <table className="w-full min-w-full">
             {showHeader && (
