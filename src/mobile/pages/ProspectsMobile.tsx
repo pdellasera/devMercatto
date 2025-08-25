@@ -1,0 +1,431 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  Search, 
+  Filter, 
+  Heart, 
+  Eye, 
+  Star, 
+  MapPin,
+  Calendar,
+  Users,
+  ArrowUp,
+  RefreshCw
+} from 'lucide-react';
+import { cn } from '../utils/cn';
+import { useMobilePerformance, useMobileGestures } from '../hooks';
+import MobileButton from '../components/ui/MobileButton';
+
+interface Prospect {
+  id: string;
+  name: string;
+  age: number;
+  position: string;
+  club: string;
+  ovr: number;
+  ovrFisico: number;
+  ovrTecnico: number;
+  ovrCompetencia: number;
+  talla: number;
+  potencia: number;
+  resistencia: number;
+  avatar?: string;
+  isFavorite: boolean;
+  lastSeen: string;
+  location: string;
+}
+
+// Mock data para prospectos
+const generateMockProspects = (count: number): Prospect[] => {
+  const positions = ['Delantero', 'Centrocampista', 'Defensa', 'Portero'];
+  const clubs = ['Real Madrid', 'Barcelona', 'Atlético Madrid', 'Sevilla', 'Valencia', 'Villarreal'];
+  const locations = ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao', 'Málaga'];
+  
+  return Array.from({ length: count }, (_, index) => ({
+    id: `prospect-${index + 1}`,
+    name: `Prospecto ${index + 1}`,
+    age: Math.floor(Math.random() * 10) + 15, // 15-24 años
+    position: positions[Math.floor(Math.random() * positions.length)],
+    club: clubs[Math.floor(Math.random() * clubs.length)],
+    ovr: Math.floor(Math.random() * 30) + 70, // 70-99
+    ovrFisico: Math.floor(Math.random() * 30) + 70,
+    ovrTecnico: Math.floor(Math.random() * 30) + 70,
+    ovrCompetencia: Math.floor(Math.random() * 30) + 70,
+    talla: Math.floor(Math.random() * 20) + 160, // 160-179 cm
+    potencia: Math.floor(Math.random() * 30) + 70,
+    resistencia: Math.floor(Math.random() * 30) + 70,
+    isFavorite: Math.random() > 0.7,
+    lastSeen: `${Math.floor(Math.random() * 7) + 1} días`,
+    location: locations[Math.floor(Math.random() * locations.length)],
+  }));
+};
+
+const ProspectsMobile: React.FC = () => {
+  const [prospects, setProspects] = useState<Prospect[]>([]);
+  const [filteredProspects, setFilteredProspects] = useState<Prospect[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPosition, setSelectedPosition] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'ovr' | 'age' | 'name'>('ovr');
+  const [showFavorites, setShowFavorites] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { useLazyLoad, throttle } = useMobilePerformance();
+
+  // Generar datos mock al cargar
+  useEffect(() => {
+    const loadProspects = async () => {
+      setLoading(true);
+      // Simular carga de API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const mockData = generateMockProspects(50);
+      setProspects(mockData);
+      setFilteredProspects(mockData);
+      setLoading(false);
+    };
+
+    loadProspects();
+  }, []);
+
+  // Filtrar prospectos
+  useEffect(() => {
+    let filtered = prospects;
+
+    // Filtro por búsqueda
+    if (searchQuery) {
+      filtered = filtered.filter(prospect =>
+        prospect.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        prospect.club.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        prospect.position.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Filtro por posición
+    if (selectedPosition !== 'all') {
+      filtered = filtered.filter(prospect => prospect.position === selectedPosition);
+    }
+
+    // Filtro por favoritos
+    if (showFavorites) {
+      filtered = filtered.filter(prospect => prospect.isFavorite);
+    }
+
+    // Ordenar
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'ovr':
+          return b.ovr - a.ovr;
+        case 'age':
+          return a.age - b.age;
+        case 'name':
+          return a.name.localeCompare(b.name);
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredProspects(filtered);
+  }, [prospects, searchQuery, selectedPosition, showFavorites, sortBy]);
+
+  // Lazy load para prospectos
+  const { visibleItems, hasMore, loadingRef, loadMore } = useLazyLoad(
+    filteredProspects,
+    10,
+    0.8
+  );
+
+  // Toggle favorito
+  const toggleFavorite = (prospectId: string) => {
+    setProspects(prev => 
+      prev.map(prospect => 
+        prospect.id === prospectId 
+          ? { ...prospect, isFavorite: !prospect.isFavorite }
+          : prospect
+      )
+    );
+  };
+
+  // Refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    const newData = generateMockProspects(50);
+    setProspects(newData);
+    setIsRefreshing(false);
+  };
+
+  // Scroll to top
+  const scrollToTop = () => {
+    containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const getOvrColor = (ovr: number) => {
+    if (ovr >= 90) return 'text-green-400';
+    if (ovr >= 80) return 'text-blue-400';
+    if (ovr >= 70) return 'text-yellow-400';
+    return 'text-red-400';
+  };
+
+  const getOvrBgColor = (ovr: number) => {
+    if (ovr >= 90) return 'bg-green-500/20';
+    if (ovr >= 80) return 'bg-blue-500/20';
+    if (ovr >= 70) return 'bg-yellow-500/20';
+    return 'bg-red-500/20';
+  };
+
+  const positions = ['all', 'Delantero', 'Centrocampista', 'Defensa', 'Portero'];
+
+  return (
+    <div className="min-h-screen bg-neutral-950 text-white">
+      {/* Header */}
+      <div className="sticky top-14 z-30 bg-neutral-950/95 backdrop-blur-md border-b border-white/10 px-mobile-lg py-mobile-md">
+        <div className="flex items-center justify-between mb-mobile-md">
+          <h1 className="text-mobile-lg font-bold mobile-text-optimized">
+            Prospectos
+          </h1>
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="p-mobile-sm rounded-mobile-lg bg-neutral-800 hover:bg-neutral-700 transition-colors mobile-touch-feedback disabled:opacity-50"
+          >
+            <RefreshCw 
+              className={cn(
+                'w-4 h-4 text-neutral-300',
+                isRefreshing && 'animate-spin'
+              )} 
+            />
+          </button>
+        </div>
+
+        {/* Búsqueda */}
+        <div className="relative mb-mobile-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar prospectos..."
+            className="w-full pl-10 pr-4 py-mobile-sm bg-neutral-900 border border-white/20 rounded-mobile-lg text-white placeholder-neutral-400 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 mobile-text-optimized"
+          />
+        </div>
+
+        {/* Filtros */}
+        <div className="flex items-center gap-mobile-sm overflow-x-auto pb-mobile-xs">
+          <MobileButton
+            size="sm"
+            variant={showFavorites ? 'primary' : 'outline'}
+            onClick={() => setShowFavorites(!showFavorites)}
+            className="flex-shrink-0"
+          >
+            <Heart className="w-3 h-3 mr-mobile-xs" />
+            Favoritos
+          </MobileButton>
+
+          <select
+            value={selectedPosition}
+            onChange={(e) => setSelectedPosition(e.target.value)}
+            className="px-mobile-md py-mobile-sm bg-neutral-900 border border-white/20 rounded-mobile-lg text-white mobile-text-optimized focus:outline-none focus:border-primary-500"
+          >
+            {positions.map(position => (
+              <option key={position} value={position}>
+                {position === 'all' ? 'Todas las posiciones' : position}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as 'ovr' | 'age' | 'name')}
+            className="px-mobile-md py-mobile-sm bg-neutral-900 border border-white/20 rounded-mobile-lg text-white mobile-text-optimized focus:outline-none focus:border-primary-500"
+          >
+            <option value="ovr">Ordenar por OVR</option>
+            <option value="age">Ordenar por Edad</option>
+            <option value="name">Ordenar por Nombre</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Lista de Prospectos */}
+      <div 
+        ref={containerRef}
+        className="px-mobile-lg py-mobile-md space-y-mobile-md"
+      >
+        {loading ? (
+          // Skeleton loading
+          Array.from({ length: 10 }).map((_, index) => (
+            <div
+              key={index}
+              className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-mobile-lg p-mobile-lg animate-pulse"
+            >
+              <div className="flex items-center gap-mobile-md">
+                <div className="w-12 h-12 bg-neutral-700 rounded-mobile-lg" />
+                <div className="flex-1 space-y-mobile-xs">
+                  <div className="h-4 bg-neutral-700 rounded w-3/4" />
+                  <div className="h-3 bg-neutral-700 rounded w-1/2" />
+                </div>
+                <div className="w-8 h-8 bg-neutral-700 rounded" />
+              </div>
+            </div>
+          ))
+        ) : visibleItems.length === 0 ? (
+          // Estado vacío
+          <div className="text-center py-mobile-xl">
+            <Users className="w-16 h-16 text-neutral-600 mx-auto mb-mobile-md" />
+            <h3 className="text-mobile-lg font-semibold text-neutral-300 mb-mobile-sm">
+              No se encontraron prospectos
+            </h3>
+            <p className="text-neutral-500 text-mobile-sm">
+              Intenta ajustar los filtros o la búsqueda
+            </p>
+          </div>
+        ) : (
+          // Lista de prospectos
+          visibleItems.map((prospect, index) => (
+            <div
+              key={prospect.id}
+              className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-mobile-lg p-mobile-lg animate-mobile-slide-up"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <div className="flex items-center gap-mobile-md">
+                {/* Avatar */}
+                {prospect.avatar ? (
+                  <img
+                    src={prospect.avatar}
+                    alt={prospect.name}
+                    className="w-12 h-12 rounded-mobile-lg object-cover"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-mobile-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-mobile-sm">
+                      {prospect.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+
+                {/* Información principal */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-mobile-sm mb-mobile-xs">
+                    <h3 className="text-mobile-base font-medium mobile-text-optimized truncate">
+                      {prospect.name}
+                    </h3>
+                    <button
+                      onClick={() => toggleFavorite(prospect.id)}
+                      className="flex-shrink-0 p-mobile-xs"
+                    >
+                      <Heart 
+                        className={cn(
+                          'w-4 h-4 transition-colors',
+                          prospect.isFavorite 
+                            ? 'text-red-500 fill-current' 
+                            : 'text-neutral-400 hover:text-red-400'
+                        )} 
+                      />
+                    </button>
+                  </div>
+                  
+                  <div className="flex items-center gap-mobile-sm text-neutral-400 text-mobile-sm mb-mobile-xs">
+                    <span>{prospect.position}</span>
+                    <span>•</span>
+                    <span>{prospect.age} años</span>
+                    <span>•</span>
+                    <span>{prospect.club}</span>
+                  </div>
+
+                  <div className="flex items-center gap-mobile-sm text-neutral-500 text-mobile-xs">
+                    <div className="flex items-center gap-mobile-xs">
+                      <MapPin className="w-3 h-3" />
+                      <span>{prospect.location}</span>
+                    </div>
+                    <span>•</span>
+                    <div className="flex items-center gap-mobile-xs">
+                      <Calendar className="w-3 h-3" />
+                      <span>Visto hace {prospect.lastSeen}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* OVR y estadísticas */}
+                <div className="text-right">
+                  <div className={cn(
+                    'inline-flex items-center justify-center w-12 h-12 rounded-mobile-lg font-bold text-mobile-sm',
+                    getOvrBgColor(prospect.ovr),
+                    getOvrColor(prospect.ovr)
+                  )}>
+                    {prospect.ovr}
+                  </div>
+                  <div className="text-neutral-500 text-mobile-xs mt-mobile-xs">
+                    OVR
+                  </div>
+                </div>
+              </div>
+
+              {/* Estadísticas detalladas */}
+              <div className="mt-mobile-md pt-mobile-md border-t border-white/10">
+                <div className="grid grid-cols-3 gap-mobile-sm text-center">
+                  <div>
+                    <div className="text-mobile-xs text-neutral-400">Físico</div>
+                    <div className={cn('text-mobile-sm font-medium', getOvrColor(prospect.ovrFisico))}>
+                      {prospect.ovrFisico}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-mobile-xs text-neutral-400">Técnico</div>
+                    <div className={cn('text-mobile-sm font-medium', getOvrColor(prospect.ovrTecnico))}>
+                      {prospect.ovrTecnico}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-mobile-xs text-neutral-400">Comp.</div>
+                    <div className={cn('text-mobile-sm font-medium', getOvrColor(prospect.ovrCompetencia))}>
+                      {prospect.ovrCompetencia}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Acciones */}
+              <div className="mt-mobile-md flex items-center gap-mobile-sm">
+                <Link 
+                  to={`/mobile/prospects/${prospect.id}`}
+                  className="flex-1 inline-flex items-center justify-center px-mobile-md py-mobile-sm text-mobile-sm font-medium border border-neutral-300 bg-transparent text-neutral-700 hover:bg-neutral-50 focus:ring-2 focus:ring-neutral-500 active:bg-neutral-100 rounded-mobile-lg shadow-mobile-sm hover:shadow-mobile-md transition-all duration-200 mobile-touch-feedback mobile-optimized"
+                >
+                  <Eye className="w-3 h-3 mr-mobile-xs" />
+                  Ver Detalles
+                </Link>
+                <MobileButton
+                  size="sm"
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <Star className="w-3 h-3 mr-mobile-xs" />
+                  Evaluar
+                </MobileButton>
+              </div>
+            </div>
+          ))
+        )}
+
+        {/* Loading indicator para infinite scroll */}
+        {hasMore && (
+          <div ref={loadingRef} className="text-center py-mobile-lg">
+            <div className="inline-flex items-center gap-mobile-sm text-neutral-400">
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              <span className="text-mobile-sm">Cargando más prospectos...</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Botón flotante para scroll to top */}
+      <button
+        onClick={scrollToTop}
+        className="fixed bottom-24 right-mobile-lg z-40 p-mobile-md bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-mobile-lg transition-all duration-200 mobile-touch-feedback"
+      >
+        <ArrowUp className="w-5 h-5" />
+      </button>
+    </div>
+  );
+};
+
+export default ProspectsMobile;
