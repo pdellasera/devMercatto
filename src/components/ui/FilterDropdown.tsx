@@ -92,13 +92,12 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleFilterClick = (filterId: string, event: React.MouseEvent) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const scrollY = window.scrollY;
+    const element = event.currentTarget as HTMLElement;
     
-    // Usar coordenadas absolutas para evitar problemas con scroll
+    // Usar offsetLeft y offsetTop para coordenadas absolutas
     setFilterPosition({
-      x: rect.right,
-      y: rect.top + scrollY
+      x: element.offsetLeft + element.offsetWidth,
+      y: element.offsetTop
     });
     setActiveFilter(filterId);
   };
