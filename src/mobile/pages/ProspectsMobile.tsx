@@ -13,7 +13,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { cn } from '../utils/cn';
-import { useMobilePerformance, useMobileGestures, useMobileLoading } from '../hooks';
+import { useMobilePerformance, useMobileGestures, useMobileLoading, useMobileOffline } from '../hooks';
 import MobileButton from '../components/ui/MobileButton';
 import { MobileFilters, FilterModalMobile } from '../components/filters';
 import { 
@@ -22,7 +22,9 @@ import {
   MobileSkeleton,
   MobileLoadingSpinner,
   MobileLoadingOverlay,
-  MobileLoadingPlaceholder
+  MobileLoadingPlaceholder,
+  MobileOfflineIndicator,
+  MobileCacheManager
 } from '../components/ui';
 
 interface Prospect {
@@ -90,9 +92,23 @@ const ProspectsMobile: React.FC = () => {
 
   // Función para cargar prospectos
   const loadProspects = async () => {
+    // Verificar cache primero
+    const cachedProspects = offlineState.getCache<Prospect[]>('prospects');
+    if (cachedProspects && !offlineState.isOffline) {
+      setProspects(cachedProspects);
+      setFilteredProspects(cachedProspects);
+      return;
+    }
+
     // Simular carga de API
     await new Promise(resolve => setTimeout(resolve, 1000));
     const mockData = generateMockProspects(50);
+    
+    // Guardar en cache
+    offlineState.setCache('prospects', mockData, {
+      expiresAt: Date.now() + (2 * 60 * 60 * 1000), // 2 horas
+    });
+    
     setProspects(mockData);
     setFilteredProspects(mockData);
   };
@@ -215,6 +231,15 @@ const ProspectsMobile: React.FC = () => {
           : prospect
       )
     );
+
+    // Agregar a cola de sincronización si está offline
+    if (offlineState.isOffline) {
+      offlineState.addToSyncQueue({
+        action: 'update',
+        endpoint: `/prospects/${prospectId}/favorite`,
+        data: { isFavorite: !prospects.find(p => p.id === prospectId)?.isFavorite },
+      });
+    }
   };
 
   // Refresh
@@ -239,6 +264,15 @@ const ProspectsMobile: React.FC = () => {
     onRetry: async () => {
       await loadProspects();
     },
+  });
+
+  // Hook de offline para gestionar cache y sincronización
+  const offlineState = useMobileOffline({
+    cacheExpiry: 2 * 60 * 60 * 1000, // 2 horas
+    maxCacheSize: 50,
+    syncRetryAttempts: 3,
+    syncRetryDelay: 5000,
+    enableAutoSync: true,
   });
 
   const handleFiltersApply = (filters: Record<string, any>) => {
@@ -422,16 +456,22 @@ const ProspectsMobile: React.FC = () => {
         ) : visibleItems.length === 0 ? (
           // Estado vacío
           <MobileLoadingPlaceholder
-            type="no-results"
-            title="No se encontraron prospectos"
-            description="Intenta ajustar los filtros o la búsqueda para encontrar más prospectos"
-            actionText="Limpiar filtros"
-            onAction={() => {
-              setSearchQuery('');
-              setSelectedPosition('all');
-              setShowFavorites(false);
-              setActiveFilters({});
-            }}
+            type={offlineState.isOffline ? "offline" : "no-results"}
+            title={offlineState.isOffline ? "Sin conexión" : "No se encontraron prospectos"}
+            description={offlineState.isOffline 
+              ? "No tienes conexión a internet. Los datos mostrados pueden estar desactualizados."
+              : "Intenta ajustar los filtros o la búsqueda para encontrar más prospectos"
+            }
+            actionText={offlineState.isOffline ? "Reconectar" : "Limpiar filtros"}
+            onAction={offlineState.isOffline 
+              ? () => window.location.reload()
+              : () => {
+                  setSearchQuery('');
+                  setSelectedPosition('all');
+                  setShowFavorites(false);
+                  setActiveFilters({});
+                }
+            }
           />
         ) : (
           // Lista de prospectos
@@ -609,6 +649,34 @@ const ProspectsMobile: React.FC = () => {
         variant="overlay"
         spinnerSize="lg"
         spinnerVariant="primary"
+      />
+
+      {/* Indicador de estado offline */}
+      <MobileOfflineIndicator
+        isOnline={offlineState.isOnline}
+        isOffline={offlineState.isOffline}
+        isSyncing={offlineState.isSyncing}
+        syncQueue={offlineState.syncQueue}
+        lastSync={offlineState.lastSync}
+        syncError={offlineState.syncError}
+        connectionType={offlineState.connectionType}
+        connectionQuality={offlineState.connectionQuality}
+        onManualSync={offlineState.performSync}
+        className="fixed bottom-20 left-mobile-lg right-mobile-lg z-40"
+        showDetails={true}
+      />
+
+      {/* Gestor de cache */}
+      <MobileCacheManager
+        cacheSize={offlineState.cacheSize * 1024} // Simular tamaño en bytes
+        syncQueue={offlineState.syncQueue}
+        isSyncing={offlineState.isSyncing}
+        lastSync={offlineState.lastSync}
+        syncError={offlineState.syncError}
+        onClearCache={offlineState.clearCache}
+        onPerformSync={offlineState.performSync}
+        className="fixed bottom-32 left-mobile-lg right-mobile-lg z-40"
+        showAdvanced={true}
       />
     </div>
   );

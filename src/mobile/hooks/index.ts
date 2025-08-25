@@ -23,6 +23,9 @@ export { useMobilePerformance } from './performance/useMobilePerformance';
 // Hooks de loading
 export { default as useMobileLoading } from './useMobileLoading';
 
+// Hooks de offline
+export { default as useMobileOffline } from './useMobileOffline';
+
 // Tipos comunes
 export type {
   BreakpointState,
