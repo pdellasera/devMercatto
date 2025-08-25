@@ -47,14 +47,14 @@ export const FilterModal: React.FC<FilterModalProps> = ({
            "fixed bg-white rounded-lg shadow-xl border border-gray-200 z-50",
            "before:content-[''] before:absolute before:top-4 before:-right-2 before:w-0 before:h-0",
            "before:border-l-[8px] before:border-r-[8px] before:border-b-[8px] before:border-l-transparent before:border-r-transparent before:border-b-white",
-           "before:-rotate-90",
+           "before:rotate-90",
            "after:content-[''] after:absolute after:top-4 after:-right-2.5 after:w-0 after:h-0",
            "after:border-l-[9px] after:border-r-[9px] after:border-b-[9px] after:border-l-transparent after:border-r-transparent after:border-b-gray-200",
-           "after:-rotate-90"
+           "after:rotate-90"
          )}
          style={{
-           left: position.x - 320, // Posicionar a la izquierda del dropdown
-           top: position.y - 10
+           left: position.x - 920, // Posicionar a la izquierda del dropdown
+           top: position.y - 90
          }}
       >
         {/* Header */}
