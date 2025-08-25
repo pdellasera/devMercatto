@@ -271,9 +271,13 @@ const Table = <T extends Record<string, any>>({
                   {columns.map((column, index) => (
                     <motion.th
                       key={column.key}
-                      initial={{ opacity: 0, y: -20 }}
+                      initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
+                      transition={{ 
+                        delay: index * 0.05,
+                        duration: 0.4,
+                        ease: [0.25, 0.46, 0.45, 0.94]
+                      }}
                       className={cn(
                         headerCellClasses,
                         column.sortable && 'cursor-pointer hover:bg-white/10 transition-all duration-200',
@@ -314,13 +318,13 @@ const Table = <T extends Record<string, any>>({
                     {Array.from({ length: 10 }, (_, index) => (
                       <motion.tr
                         key={`skeleton-${index}`}
-                        initial={{ opacity: 0, y: 20, scale: 0.70 }}
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -20, scale: 0.70 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
                         transition={{
-                          delay: index * 0.05,
-                          duration: 0.3,
-                          ease: "easeOut"
+                          delay: index * 0.03,
+                          duration: 0.4,
+                          ease: [0.25, 0.46, 0.45, 0.94]
                         }}
                         className="border-b border-white/5 hover:bg-white/2 transition-all duration-300"
                       >
@@ -653,13 +657,13 @@ const Table = <T extends Record<string, any>>({
                     return (
                       <motion.tr
                         key={rowId}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
+                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.98 }}
                         transition={{
-                          delay: index * 0.05,
-                          duration: 0.3,
-                          ease: "easeOut"
+                          delay: index * 0.03,
+                          duration: 0.4,
+                          ease: [0.25, 0.46, 0.45, 0.94]
                         }}
                         className={cn(
                           rowClasses,
@@ -681,9 +685,13 @@ const Table = <T extends Record<string, any>>({
                         {columns.map((column, colIndex) => (
                           <motion.td
                             key={column.key}
-                            initial={{ opacity: 0, x: 20 }}
+                            initial={{ opacity: 0, x: 10 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.05 + colIndex * 0.02 }}
+                            transition={{ 
+                              delay: index * 0.03 + colIndex * 0.01,
+                              duration: 0.3,
+                              ease: [0.25, 0.46, 0.45, 0.94]
+                            }}
                             className={cn(
                               cellClasses,
                               column.align && `text-${column.align}`,
