@@ -439,68 +439,108 @@ export const Dashboard: React.FC = () => {
 
           
 
-          {/* Table Section */}
-          <motion.div variants={itemVariants}>
-            <div className="glass-card p-8">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Lista de Prospectos</h3>
-                  <div className="text-gray-300">
-                    {loading ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                        <span>Preparando datos...</span>
-                      </div>
-                    ) : (
-                      `${prospects?.length || 0} prospectos encontrados`
-                    )}
-                  </div>
-                </div>
+                     {/* Table Section */}
+           <motion.div variants={itemVariants}>
+             <div className="glass-card p-8">
+               {/* Header con título y filtros integrados */}
+               <div className="flex items-center justify-between mb-6">
+                 <div className="flex items-center space-x-6">
+                   <div>
+                     <h3 className="text-2xl font-bold text-white mb-1">Lista de Prospectos</h3>
+                     <div className="text-gray-300 text-sm">
+                       {loading ? (
+                         <div className="flex items-center space-x-2">
+                           <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                           <span>Preparando datos...</span>
+                         </div>
+                       ) : (
+                         `${prospects?.length || 0} prospectos encontrados`
+                       )}
+                     </div>
+                   </div>
 
-                {/* View Mode Toggle */}
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant={viewMode === 'table' ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={() => setViewMode('table')}
-                    className="glass-button"
-                  >
-                    <List className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'grid' ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className="glass-button"
-                  >
-                    <Grid3X3 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
+                   {/* Filtros compactos */}
+                   <div className="flex items-center space-x-3">
+                     {/* Barra de búsqueda compacta */}
+                     <div className="relative">
+                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/50" />
+                       <input
+                         type="text"
+                         placeholder="Buscar prospectos..."
+                         value={searchQuery}
+                         onChange={(e) => handleSearch(e.target.value)}
+                         className="w-64 pl-10 pr-4 py-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200 text-sm"
+                       />
+                     </div>
 
+                     {/* Filtros dropdown compactos */}
+                     <FilterDropdown
+                       options={positionOptions}
+                       value={selectedPosition}
+                       onChange={handlePositionFilter}
+                       placeholder="Posición"
+                       className="w-40"
+                     />
+                     <FilterDropdown
+                       options={statusOptions}
+                       value={selectedStatus}
+                       onChange={handleStatusFilter}
+                       placeholder="Estado"
+                       className="w-40"
+                     />
 
+                     {/* Botón limpiar filtros */}
+                     {(searchQuery || selectedPosition || selectedStatus) && (
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => {
+                           setSearchQuery('');
+                           setSelectedPosition('');
+                           setSelectedStatus('');
+                           setFilters({ page: 1 });
+                         }}
+                         className="glass-button border-white/10 text-gray-300 hover:text-white hover:border-white/20 text-xs"
+                       >
+                         Limpiar
+                       </Button>
+                     )}
+                   </div>
+                 </div>
 
-                             <Table
+                 {/* View Mode Toggle */}
+                 <div className="flex items-center space-x-2">
+                   <Button
+                     variant={viewMode === 'table' ? 'primary' : 'secondary'}
+                     size="sm"
+                     onClick={() => setViewMode('table')}
+                     className="glass-button"
+                   >
+                     <List className="w-4 h-4" />
+                   </Button>
+                   <Button
+                     variant={viewMode === 'grid' ? 'primary' : 'secondary'}
+                     size="sm"
+                     onClick={() => setViewMode('grid')}
+                     className="glass-button"
+                   >
+                     <Grid3X3 className="w-4 h-4" />
+                   </Button>
+                 </div>
+               </div>
+
+               {/* Tabla sin filtros integrados */}
+               <Table
                  data={prospects || []}
                  columns={columns}
                  loading={loading}
                  emptyMessage="No se encontraron prospectos"
                  className="w-full"
-                 searchable={true}
-                 searchPlaceholder="Buscar por nombre, posición o club..."
+                 searchable={false}
                  striped={true}
                  hoverable={true}
                  compact={false}
-                 showFilters={true}
-                 onClearFilters={() => {
-                   setSearchQuery('');
-                   setSelectedPosition('');
-                   setSelectedStatus('');
-                   setFilters({ page: 1 });
-                 }}
-                 filterStatus={searchQuery ? 'Filtros activos' : 'Sin filtros'}
-                 totalItems={pagination.total || 0}
-                 visibleItems={prospects?.length || 0}
+                 showFilters={false}
                />
             </div>
           </motion.div>
