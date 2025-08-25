@@ -26,6 +26,9 @@ export { default as useMobileLoading } from './useMobileLoading';
 // Hooks de offline
 export { default as useMobileOffline } from './useMobileOffline';
 
+// Hooks de haptic
+export { default as useMobileHaptic } from './useMobileHaptic';
+
 // Tipos comunes
 export type {
   BreakpointState,

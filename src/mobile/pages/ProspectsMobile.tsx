@@ -13,7 +13,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { cn } from '../utils/cn';
-import { useMobilePerformance, useMobileGestures, useMobileLoading, useMobileOffline } from '../hooks';
+import { useMobilePerformance, useMobileGestures, useMobileLoading, useMobileOffline, useMobileHaptic } from '../hooks';
 import MobileButton from '../components/ui/MobileButton';
 import { MobileFilters, FilterModalMobile } from '../components/filters';
 import { 
@@ -24,7 +24,9 @@ import {
   MobileLoadingOverlay,
   MobileLoadingPlaceholder,
   MobileOfflineIndicator,
-  MobileCacheManager
+  MobileCacheManager,
+  MobileHapticButton,
+  MobileHapticSettings
 } from '../components/ui';
 
 interface Prospect {
@@ -224,20 +226,30 @@ const ProspectsMobile: React.FC = () => {
 
   // Toggle favorito
   const toggleFavorite = (prospectId: string) => {
+    const prospect = prospects.find(p => p.id === prospectId);
+    const newFavoriteState = !prospect?.isFavorite;
+
     setProspects(prev => 
       prev.map(prospect => 
         prospect.id === prospectId 
-          ? { ...prospect, isFavorite: !prospect.isFavorite }
+          ? { ...prospect, isFavorite: newFavoriteState }
           : prospect
       )
     );
+
+    // Feedback háptico
+    if (newFavoriteState) {
+      haptic.triggerSuccess();
+    } else {
+      haptic.triggerClick();
+    }
 
     // Agregar a cola de sincronización si está offline
     if (offlineState.isOffline) {
       offlineState.addToSyncQueue({
         action: 'update',
         endpoint: `/prospects/${prospectId}/favorite`,
-        data: { isFavorite: !prospects.find(p => p.id === prospectId)?.isFavorite },
+        data: { isFavorite: newFavoriteState },
       });
     }
   };
@@ -245,9 +257,13 @@ const ProspectsMobile: React.FC = () => {
   // Refresh
   const handleRefresh = async () => {
     setIsRefreshing(true);
+    haptic.triggerClick();
+    
     await new Promise(resolve => setTimeout(resolve, 1500));
     const newData = generateMockProspects(50);
     setProspects(newData);
+    
+    haptic.triggerSuccess();
     setIsRefreshing(false);
   };
 
@@ -273,6 +289,15 @@ const ProspectsMobile: React.FC = () => {
     syncRetryAttempts: 3,
     syncRetryDelay: 5000,
     enableAutoSync: true,
+  });
+
+  // Hook de haptic para feedback táctil y sonoro
+  const haptic = useMobileHaptic({
+    enabled: true,
+    soundEnabled: true,
+    hapticEnabled: true,
+    defaultVolume: 0.5,
+    defaultIntensity: 0.5,
   });
 
   const handleFiltersApply = (filters: Record<string, any>) => {
@@ -332,10 +357,12 @@ const ProspectsMobile: React.FC = () => {
           <h1 className="text-mobile-lg font-bold mobile-text-optimized">
             Prospectos
           </h1>
-          <button
+          <MobileHapticButton
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="p-mobile-sm rounded-mobile-lg bg-neutral-800 hover:bg-neutral-700 transition-colors mobile-touch-feedback disabled:opacity-50"
+            hapticType="click"
+            soundType="click"
+            className="p-mobile-sm rounded-mobile-lg bg-neutral-800 hover:bg-neutral-700 transition-colors disabled:opacity-50"
           >
             <RefreshCw 
               className={cn(
@@ -343,7 +370,7 @@ const ProspectsMobile: React.FC = () => {
                 isRefreshing && 'animate-spin'
               )} 
             />
-          </button>
+          </MobileHapticButton>
         </div>
 
         {/* Búsqueda */}
@@ -503,9 +530,11 @@ const ProspectsMobile: React.FC = () => {
                     <h3 className="text-mobile-base font-medium mobile-text-optimized truncate">
                       {prospect.name}
                     </h3>
-                    <button
+                    <MobileHapticButton
                       onClick={() => toggleFavorite(prospect.id)}
-                      className="flex-shrink-0 p-mobile-xs"
+                      hapticType={prospect.isFavorite ? "click" : "success"}
+                      soundType={prospect.isFavorite ? "click" : "success"}
+                      className="flex-shrink-0 p-mobile-xs bg-transparent border-none shadow-none"
                     >
                       <Heart 
                         className={cn(
@@ -515,7 +544,7 @@ const ProspectsMobile: React.FC = () => {
                             : 'text-neutral-400 hover:text-red-400'
                         )} 
                       />
-                    </button>
+                    </MobileHapticButton>
                   </div>
                   
                   <div className="flex items-center gap-mobile-sm text-neutral-400 text-mobile-sm mb-mobile-xs">
@@ -615,12 +644,14 @@ const ProspectsMobile: React.FC = () => {
         </SwipeableContainer>
 
       {/* Botón flotante para scroll to top */}
-      <button
+      <MobileHapticButton
         onClick={scrollToTop}
-        className="fixed bottom-24 right-mobile-lg z-40 p-mobile-md bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-mobile-lg transition-all duration-200 mobile-touch-feedback"
+        hapticType="click"
+        soundType="click"
+        className="fixed bottom-24 right-mobile-lg z-40 p-mobile-md bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-mobile-lg transition-all duration-200"
       >
         <ArrowUp className="w-5 h-5" />
-      </button>
+      </MobileHapticButton>
 
       {/* Componentes de Filtros */}
       <MobileFilters
@@ -677,6 +708,14 @@ const ProspectsMobile: React.FC = () => {
         onPerformSync={offlineState.performSync}
         className="fixed bottom-32 left-mobile-lg right-mobile-lg z-40"
         showAdvanced={true}
+      />
+
+      {/* Configuración de feedback háptico */}
+      <MobileHapticSettings
+        className="fixed bottom-44 left-mobile-lg right-mobile-lg z-40"
+        onSettingsChange={(settings) => {
+          console.log('Haptic settings changed:', settings);
+        }}
       />
     </div>
   );
