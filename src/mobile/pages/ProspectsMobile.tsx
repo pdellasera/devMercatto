@@ -10,7 +10,10 @@ import {
   Calendar,
   Users,
   ArrowUp,
-  RefreshCw
+  RefreshCw,
+  UserPlus,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { 
@@ -45,64 +48,30 @@ import {
   MobileSkipLinks,
   MobileErrorAnnouncer
 } from '../components/ui';
-
-interface Prospect {
-  id: string;
-  name: string;
-  age: number;
-  position: string;
-  club: string;
-  ovr: number;
-  ovrFisico: number;
-  ovrTecnico: number;
-  ovrCompetencia: number;
-  talla: number;
-  potencia: number;
-  resistencia: number;
-  velocidad: number;
-  avatar?: string;
-  isFavorite: boolean;
-  lastSeen: string;
-  location: string;
-}
-
-// Mock data para prospectos
-const generateMockProspects = (count: number): Prospect[] => {
-  const positions = ['Delantero', 'Centrocampista', 'Defensa', 'Portero'];
-  const clubs = ['Real Madrid', 'Barcelona', 'Atlético Madrid', 'Sevilla', 'Valencia', 'Villarreal'];
-  const locations = ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao', 'Málaga'];
-  
-  return Array.from({ length: count }, (_, index) => ({
-    id: `prospect-${index + 1}`,
-    name: `Prospecto ${index + 1}`,
-    age: Math.floor(Math.random() * 10) + 15, // 15-24 años
-    position: positions[Math.floor(Math.random() * positions.length)],
-    club: clubs[Math.floor(Math.random() * clubs.length)],
-    ovr: Math.floor(Math.random() * 30) + 70, // 70-99
-    ovrFisico: Math.floor(Math.random() * 30) + 70,
-    ovrTecnico: Math.floor(Math.random() * 30) + 70,
-    ovrCompetencia: Math.floor(Math.random() * 30) + 70,
-    talla: Math.floor(Math.random() * 20) + 160, // 160-179 cm
-    potencia: Math.floor(Math.random() * 30) + 70,
-    resistencia: Math.floor(Math.random() * 30) + 70,
-    velocidad: Math.floor(Math.random() * 30) + 70,
-    isFavorite: Math.random() > 0.7,
-    lastSeen: `${Math.floor(Math.random() * 7) + 1} días`,
-    location: locations[Math.floor(Math.random() * locations.length)],
-  }));
-};
+import { useProspects } from '../../hooks/useProspects';
+import { useAuth } from '../../hooks/useAuth';
+import { Prospect } from '../../types';
+import { LoginModal } from '../../components/ui/LoginModal';
 
 const ProspectsMobile: React.FC = () => {
-  const [prospects, setProspects] = useState<Prospect[]>([]);
-  const [filteredProspects, setFilteredProspects] = useState<Prospect[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    prospects,
+    metrics,
+    pagination,
+    loading,
+    error,
+    setFilters,
+    setPage,
+  } = useProspects();
+
+  const { isAuthenticated, user } = useAuth();
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPosition, setSelectedPosition] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'ovr' | 'age' | 'name'>('ovr');
-  const [showFavorites, setShowFavorites] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   const [currentView, setCurrentView] = useState<'list' | 'grid' | 'map'>('list');
   const [showAccessibilitySettings, setShowAccessibilitySettings] = useState(false);
@@ -113,166 +82,92 @@ const ProspectsMobile: React.FC = () => {
   // Hook de debounce para búsquedas optimizadas
   const debouncedSearchQuery = useMobileDebounce(searchQuery, { delay: 300 });
 
-  // Función para cargar prospectos
-  const loadProspects = async () => {
-    // Verificar cache primero
-    const cachedProspects = offlineState.getCache<Prospect[]>('prospects');
-    if (cachedProspects && !offlineState.isOffline) {
-      setProspects(cachedProspects);
-      setFilteredProspects(cachedProspects);
-      return;
-    }
+  // Debug logs
+  console.log('ProspectsMobile render:', { prospects, loading, error, metrics });
 
-    // Simular carga de API
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const mockData = generateMockProspects(50);
-    
-    // Guardar en cache
-    offlineState.setCache('prospects', mockData, {
-      expiresAt: Date.now() + (2 * 60 * 60 * 1000), // 2 horas
-    });
-    
-    setProspects(mockData);
-    setFilteredProspects(mockData);
+  const positionOptions = [
+    { value: '', label: 'Todas las posiciones' },
+    { value: 'Portero', label: 'Portero' },
+    { value: 'Portera', label: 'Portera' },
+    { value: 'Defensa', label: 'Defensa' },
+    { value: 'Centrocampista', label: 'Centrocampista' },
+    { value: 'Delantero', label: 'Delantero' },
+  ];
+
+  const statusOptions = [
+    { value: '', label: 'Todos los estados' },
+    { value: 'Libre', label: 'Libre' },
+    { value: 'Contratado', label: 'Contratado' },
+    { value: 'Observado', label: 'Observado' },
+    { value: 'Pendiente', label: 'Pendiente' },
+  ];
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setFilters({ search: query, page: 1 });
   };
 
-  // Generar datos mock al cargar
-  useEffect(() => {
-    loadingState.withLoading(loadProspects());
-  }, []);
+  const handleLogin = (email: string, password: string) => {
+    console.log('Login attempt:', { email, password });
+    setShowLoginModal(false);
+  };
 
-  // Filtrar prospectos con debounce optimizado
-  useEffect(() => {
-    let filtered = prospects;
+  const handleRegister = (email: string, password: string, name: string) => {
+    console.log('Register attempt:', { email, password, name });
+    setShowLoginModal(false);
+  };
 
-    // Filtro por búsqueda con debounce
-    if (debouncedSearchQuery) {
-      filtered = filtered.filter(prospect =>
-        prospect.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-        prospect.club.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-        prospect.position.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-      );
+  const handlePositionFilter = (position: string | string[]) => {
+    const pos = Array.isArray(position) ? position[0] : position;
+    setSelectedPosition(pos);
+    setFilters({ position: pos || undefined, page: 1 });
+  };
+
+  const handleStatusFilter = (status: string | string[]) => {
+    const stat = Array.isArray(status) ? status[0] : status;
+    setSelectedStatus(stat);
+    setFilters({ status: stat || undefined, page: 1 });
+  };
+
+  const handleAddProspect = () => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
     }
+    console.log('Agregar prospecto');
+  };
 
-    // Filtro por posición
-    if (selectedPosition !== 'all') {
-      filtered = filtered.filter(prospect => prospect.position === selectedPosition);
+  const handleContactAthlete = (prospectId: number) => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
     }
+    console.log('Contactar atleta:', prospectId);
+  };
 
-    // Filtro por favoritos
-    if (showFavorites) {
-      filtered = filtered.filter(prospect => prospect.isFavorite);
-    }
+  const handleViewDetails = (prospectId: number) => {
+    console.log('Ver detalles del prospecto:', prospectId);
+  };
 
-    // Filtros avanzados
-    Object.entries(activeFilters).forEach(([key, value]) => {
-      if (value && value !== 'all') {
-        switch (key) {
-          case 'position':
-            if (value !== 'all') {
-              filtered = filtered.filter(prospect => prospect.position === value);
-            }
-            break;
-          case 'age':
-            if (value.min !== undefined && value.max !== undefined) {
-              filtered = filtered.filter(prospect => 
-                prospect.age >= value.min && prospect.age <= value.max
-              );
-            }
-            break;
-          case 'ovr':
-            if (value.min !== undefined && value.max !== undefined) {
-              filtered = filtered.filter(prospect => 
-                prospect.ovr >= value.min && prospect.ovr <= value.max
-              );
-            }
-            break;
-          case 'club':
-            if (Array.isArray(value) && value.length > 0) {
-              filtered = filtered.filter(prospect => value.includes(prospect.club));
-            }
-            break;
-          case 'location':
-            if (Array.isArray(value) && value.length > 0) {
-              filtered = filtered.filter(prospect => value.includes(prospect.location));
-            }
-            break;
-          case 'attributes':
-            if (Array.isArray(value) && value.length > 0) {
-              filtered = filtered.filter(prospect => {
-                return value.some((attr: string) => {
-                  switch (attr) {
-                    case 'potencia':
-                      return prospect.potencia >= 80;
-                    case 'velocidad':
-                      return prospect.velocidad >= 80;
-                    case 'resistencia':
-                      return prospect.resistencia >= 80;
-                    case 'tecnica':
-                      return prospect.ovrTecnico >= 80;
-                    default:
-                      return false;
-                  }
-                });
-              });
-            }
-            break;
-        }
-      }
+  const getAge = (birthYear: number) => {
+    return new Date().getFullYear() - birthYear;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
+  };
 
-    // Ordenar
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'ovr':
-          return b.ovr - a.ovr;
-        case 'age':
-          return a.age - b.age;
-        case 'name':
-          return a.name.localeCompare(b.name);
-        default:
-          return 0;
-      }
-    });
-
-    setFilteredProspects(filtered);
-  }, [prospects, debouncedSearchQuery, selectedPosition, showFavorites, sortBy, activeFilters]);
-
-  // Lazy load para prospectos
-  const { visibleItems, hasMore, loadingRef, loadMore } = useLazyLoad(
-    filteredProspects,
-    10,
-    0.8
-  );
-
-  // Toggle favorito
-  const toggleFavorite = (prospectId: string) => {
-    const prospect = prospects.find(p => p.id === prospectId);
-    const newFavoriteState = !prospect?.isFavorite;
-
-    setProspects(prev => 
-      prev.map(prospect => 
-        prospect.id === prospectId 
-          ? { ...prospect, isFavorite: newFavoriteState }
-          : prospect
-      )
-    );
-
-    // Feedback háptico
-    if (newFavoriteState) {
-      haptic.triggerSuccess();
-    } else {
-      haptic.triggerClick();
-    }
-
-    // Agregar a cola de sincronización si está offline
-    if (offlineState.isOffline) {
-      offlineState.addToSyncQueue({
-        action: 'update',
-        endpoint: `/prospects/${prospectId}/favorite`,
-        data: { isFavorite: newFavoriteState },
-      });
-    }
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
   };
 
   // Refresh
@@ -280,9 +175,8 @@ const ProspectsMobile: React.FC = () => {
     setIsRefreshing(true);
     haptic.triggerClick();
     
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    const newData = generateMockProspects(50);
-    setProspects(newData);
+    // Recargar datos usando el hook
+    setFilters({ page: 1 });
     
     haptic.triggerSuccess();
     setIsRefreshing(false);
@@ -468,36 +362,28 @@ const ProspectsMobile: React.FC = () => {
 
         {/* Filtros */}
         <div className="flex items-center gap-mobile-sm overflow-x-auto pb-mobile-xs">
-          <MobileButton
-            size="sm"
-            variant={showFavorites ? 'primary' : 'outline'}
-            onClick={() => setShowFavorites(!showFavorites)}
-            className="flex-shrink-0"
-          >
-            <Heart className="w-3 h-3 mr-mobile-xs" />
-            Favoritos
-          </MobileButton>
-
           <select
             value={selectedPosition}
-            onChange={(e) => setSelectedPosition(e.target.value)}
+            onChange={(e) => handlePositionFilter(e.target.value)}
             className="px-mobile-md py-mobile-sm bg-neutral-900 border border-white/20 rounded-mobile-lg text-white mobile-text-optimized focus:outline-none focus:border-primary-500"
           >
-            {positions.map(position => (
-              <option key={position} value={position}>
-                {position === 'all' ? 'Todas las posiciones' : position}
+            {positionOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
 
           <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'ovr' | 'age' | 'name')}
+            value={selectedStatus}
+            onChange={(e) => handleStatusFilter(e.target.value)}
             className="px-mobile-md py-mobile-sm bg-neutral-900 border border-white/20 rounded-mobile-lg text-white mobile-text-optimized focus:outline-none focus:border-primary-500"
           >
-            <option value="ovr">Ordenar por OVR</option>
-            <option value="age">Ordenar por Edad</option>
-            <option value="name">Ordenar por Nombre</option>
+            {statusOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
 
           <MobileButton
@@ -518,17 +404,41 @@ const ProspectsMobile: React.FC = () => {
           <MobileButton
             size="sm"
             variant="outline"
-            onClick={handlePullToRefresh}
-            disabled={isGestureRefreshing}
+            onClick={handleRefresh}
+            disabled={isRefreshing}
             className="flex-shrink-0"
           >
-            <RefreshCw className={cn('w-3 h-3 mr-mobile-xs', isGestureRefreshing && 'animate-spin')} />
+            <RefreshCw className={cn('w-3 h-3 mr-mobile-xs', isRefreshing && 'animate-spin')} />
             Actualizar
           </MobileButton>
         </div>
       </div>
 
-              {/* Contenedor Swipeable para diferentes vistas */}
+      {/* Authentication Notice */}
+      {!isAuthenticated && (
+        <div className="px-mobile-lg py-mobile-md">
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-mobile-lg p-mobile-md">
+            <div className="flex items-center gap-mobile-sm">
+              <UserPlus className="w-4 h-4 text-blue-400" />
+              <div className="flex-1">
+                <h3 className="text-mobile-sm font-medium text-blue-300">¿Quieres contactar atletas?</h3>
+                <p className="text-mobile-xs text-blue-200 mt-mobile-xs">
+                  Inicia sesión para contactar prospectos y acceder a funciones avanzadas.
+                </p>
+              </div>
+              <MobileButton
+                size="sm"
+                variant="primary"
+                onClick={() => setShowLoginModal(true)}
+              >
+                Comenzar
+              </MobileButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Contenedor Swipeable para diferentes vistas */}
         <SwipeableContainer
           sections={viewSections}
           currentSection={currentView === 'list' ? 0 : currentView === 'grid' ? 1 : 2}
@@ -546,7 +456,7 @@ const ProspectsMobile: React.FC = () => {
             role="region"
             aria-label="Lista de prospectos deportivos"
           >
-        {loadingState.isLoading ? (
+        {loading ? (
           // Skeleton loading mejorado
           Array.from({ length: 10 }).map((_, index) => (
             <MobileSkeleton
@@ -555,48 +465,43 @@ const ProspectsMobile: React.FC = () => {
               className="animate-mobile-slide-up"
             />
           ))
-        ) : loadingState.isError ? (
+        ) : error ? (
           // Estado de error
           <MobileLoadingPlaceholder
             type="error"
             title="Error al cargar prospectos"
-            description={loadingState.error || 'Hubo un problema al cargar los datos'}
+            description={error || 'Hubo un problema al cargar los datos'}
             actionText="Reintentar"
-            onAction={loadingState.retry}
+            onAction={() => setFilters({ page: 1 })}
           />
-        ) : visibleItems.length === 0 ? (
+        ) : (prospects?.length || 0) === 0 ? (
           // Estado vacío
           <MobileLoadingPlaceholder
-            type={offlineState.isOffline ? "offline" : "no-results"}
-            title={offlineState.isOffline ? "Sin conexión" : "No se encontraron prospectos"}
-            description={offlineState.isOffline 
-              ? "No tienes conexión a internet. Los datos mostrados pueden estar desactualizados."
-              : "Intenta ajustar los filtros o la búsqueda para encontrar más prospectos"
-            }
-            actionText={offlineState.isOffline ? "Reconectar" : "Limpiar filtros"}
-            onAction={offlineState.isOffline 
-              ? () => window.location.reload()
-              : () => {
-                  setSearchQuery('');
-                  setSelectedPosition('all');
-                  setShowFavorites(false);
-                  setActiveFilters({});
-                }
-            }
+            type="no-results"
+            title="No se encontraron prospectos"
+            description="Intenta ajustar los filtros o la búsqueda para encontrar más prospectos"
+            actionText="Limpiar filtros"
+            onAction={() => {
+              setSearchQuery('');
+              setSelectedPosition('');
+              setSelectedStatus('');
+              setActiveFilters({});
+              setFilters({ page: 1 });
+            }}
           />
         ) : (
           // Lista de prospectos
-          visibleItems.map((prospect, index) => (
+          prospects?.map((prospect: Prospect, index: number) => (
             <div
-              key={prospect.id}
+              key={prospect.sessionID}
               className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-mobile-lg p-mobile-lg animate-mobile-slide-up"
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className="flex items-center gap-mobile-md">
                 {/* Avatar con lazy loading */}
-                {prospect.avatar ? (
+                {prospect.imgData ? (
                   <MobileLazyImage
-                    src={prospect.avatar}
+                    src={prospect.imgData}
                     alt={prospect.name}
                     className="w-12 h-12 rounded-mobile-lg"
                     aspectRatio="square"
@@ -619,21 +524,6 @@ const ProspectsMobile: React.FC = () => {
                     <h3 className="text-mobile-base font-medium mobile-text-optimized truncate">
                       {prospect.name}
                     </h3>
-                    <MobileHapticButton
-                      onClick={() => toggleFavorite(prospect.id)}
-                      hapticType={prospect.isFavorite ? "click" : "success"}
-                      soundType={prospect.isFavorite ? "click" : "success"}
-                      className="flex-shrink-0 p-mobile-xs bg-transparent border-none shadow-none"
-                    >
-                      <Heart 
-                        className={cn(
-                          'w-4 h-4 transition-colors',
-                          prospect.isFavorite 
-                            ? 'text-red-500 fill-current' 
-                            : 'text-neutral-400 hover:text-red-400'
-                        )} 
-                      />
-                    </MobileHapticButton>
                   </div>
                   
                   <div className="flex items-center gap-mobile-sm text-neutral-400 text-mobile-sm mb-mobile-xs">
@@ -641,30 +531,25 @@ const ProspectsMobile: React.FC = () => {
                     <span>•</span>
                     <span>{prospect.age} años</span>
                     <span>•</span>
-                    <span>{prospect.club}</span>
+                    <span>{prospect.status || 'Sin club'}</span>
                   </div>
 
                   <div className="flex items-center gap-mobile-sm text-neutral-500 text-mobile-xs">
                     <div className="flex items-center gap-mobile-xs">
-                      <MapPin className="w-3 h-3" />
-                      <span>{prospect.location}</span>
-                    </div>
-                    <span>•</span>
-                    <div className="flex items-center gap-mobile-xs">
                       <Calendar className="w-3 h-3" />
-                      <span>Visto hace {prospect.lastSeen}</span>
+                      <span>{prospect.birthdayDate ? formatDate(prospect.birthdayDate) : 'Sin fecha'}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* OVR y estadísticas */}
+                {/* OVR General */}
                 <div className="text-right">
                   <div className={cn(
                     'inline-flex items-center justify-center w-12 h-12 rounded-mobile-lg font-bold text-mobile-sm',
-                    getOvrBgColor(prospect.ovr),
-                    getOvrColor(prospect.ovr)
+                    getOvrBgColor(prospect.ovrGeneral || 0),
+                    getOvrColor(prospect.ovrGeneral || 0)
                   )}>
-                    {prospect.ovr}
+                    {prospect.ovrGeneral || 0}
                   </div>
                   <div className="text-neutral-500 text-mobile-xs mt-mobile-xs">
                     OVR
@@ -677,20 +562,20 @@ const ProspectsMobile: React.FC = () => {
                 <div className="grid grid-cols-3 gap-mobile-sm text-center">
                   <div>
                     <div className="text-mobile-xs text-neutral-400">Físico</div>
-                    <div className={cn('text-mobile-sm font-medium', getOvrColor(prospect.ovrFisico))}>
-                      {prospect.ovrFisico}
+                    <div className={cn('text-mobile-sm font-medium', getOvrColor(prospect.ovrFisico || 0))}>
+                      {prospect.ovrFisico || 0}
                     </div>
                   </div>
                   <div>
                     <div className="text-mobile-xs text-neutral-400">Técnico</div>
-                    <div className={cn('text-mobile-sm font-medium', getOvrColor(prospect.ovrTecnico))}>
-                      {prospect.ovrTecnico}
+                    <div className={cn('text-mobile-sm font-medium', getOvrColor(prospect.ovrTecnico || 0))}>
+                      {prospect.ovrTecnico || 0}
                     </div>
                   </div>
                   <div>
                     <div className="text-mobile-xs text-neutral-400">Comp.</div>
-                    <div className={cn('text-mobile-sm font-medium', getOvrColor(prospect.ovrCompetencia))}>
-                      {prospect.ovrCompetencia}
+                    <div className={cn('text-mobile-sm font-medium', getOvrColor(prospect.overCompetencia || 0))}>
+                      {prospect.overCompetencia || 0}
                     </div>
                   </div>
                 </div>
@@ -698,36 +583,27 @@ const ProspectsMobile: React.FC = () => {
 
               {/* Acciones */}
               <div className="mt-mobile-md flex items-center gap-mobile-sm">
-                <Link 
-                  to={`/mobile/prospects/${prospect.id}`}
-                  className="flex-1 inline-flex items-center justify-center px-mobile-md py-mobile-sm text-mobile-sm font-medium border border-neutral-300 bg-transparent text-neutral-700 hover:bg-neutral-50 focus:ring-2 focus:ring-neutral-500 active:bg-neutral-100 rounded-mobile-lg shadow-mobile-sm hover:shadow-mobile-md transition-all duration-200 mobile-touch-feedback mobile-optimized"
-                >
-                  <Eye className="w-3 h-3 mr-mobile-xs" />
-                  Ver Detalles
-                </Link>
                 <MobileButton
                   size="sm"
                   variant="outline"
                   className="flex-1"
+                  onClick={() => handleViewDetails(Number(prospect.sessionID))}
+                >
+                  <Eye className="w-3 h-3 mr-mobile-xs" />
+                  Ver Detalles
+                </MobileButton>
+                <MobileButton
+                  size="sm"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => handleContactAthlete(Number(prospect.sessionID))}
                 >
                   <Star className="w-3 h-3 mr-mobile-xs" />
-                  Evaluar
+                  Contactar
                 </MobileButton>
               </div>
             </div>
           ))
-        )}
-
-        {/* Loading indicator para infinite scroll */}
-        {hasMore && (
-          <div ref={loadingRef} className="text-center py-mobile-lg">
-            <MobileLoadingSpinner
-              size="sm"
-              variant="secondary"
-              text="Cargando más prospectos..."
-              showText
-            />
-          </div>
         )}
           </div>
         </SwipeableContainer>
@@ -749,18 +625,7 @@ const ProspectsMobile: React.FC = () => {
         onApply={handleFiltersApply}
       />
 
-      <FilterModalMobile
-        isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
-        onApply={handleFilterModalApply}
-        title="Filtro Específico"
-        options={[
-          { id: '1', label: 'Opción 1', value: 'option1' },
-          { id: '2', label: 'Opción 2', value: 'option2' },
-          { id: '3', label: 'Opción 3', value: 'option3' },
-        ]}
-        type="single"
-      />
+
 
       {/* Overlay de loading para refresh */}
       <MobileLoadingOverlay
@@ -852,6 +717,14 @@ const ProspectsMobile: React.FC = () => {
         <span className="sr-only">Accesibilidad</span>
         <span className="text-mobile-lg">♿</span>
       </MobileHapticButton>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+      />
     </div>
   );
 };
