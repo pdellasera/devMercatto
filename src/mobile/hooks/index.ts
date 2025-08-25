@@ -35,6 +35,11 @@ export { default as useMobileDebounce, useMobileDebouncedCallback } from './useM
 export { default as useMobileVirtualScroll } from './useMobileVirtualScroll';
 export { default as useMobilePerformanceMetrics } from './useMobilePerformanceMetrics';
 
+// Hooks de accesibilidad
+export { default as useMobileAccessibility } from './useMobileAccessibility';
+export { default as useMobileVoiceCommands } from './useMobileVoiceCommands';
+export { default as useMobileKeyboardNavigation } from './useMobileKeyboardNavigation';
+
 // Tipos comunes
 export type {
   BreakpointState,

@@ -20,7 +20,10 @@ import {
   useMobileOffline, 
   useMobileHaptic,
   useMobileDebounce,
-  useMobilePerformanceMetrics
+  useMobilePerformanceMetrics,
+  useMobileAccessibility,
+  useMobileVoiceCommands,
+  useMobileKeyboardNavigation
 } from '../hooks';
 import MobileButton from '../components/ui/MobileButton';
 import { MobileFilters, FilterModalMobile } from '../components/filters';
@@ -37,7 +40,10 @@ import {
   MobileHapticSettings,
   MobileLazyImage,
   MobileVirtualList,
-  MobilePerformanceMonitor
+  MobilePerformanceMonitor,
+  MobileAccessibilitySettings,
+  MobileSkipLinks,
+  MobileErrorAnnouncer
 } from '../components/ui';
 
 interface Prospect {
@@ -99,6 +105,7 @@ const ProspectsMobile: React.FC = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   const [currentView, setCurrentView] = useState<'list' | 'grid' | 'map'>('list');
+  const [showAccessibilitySettings, setShowAccessibilitySettings] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const { useLazyLoad, throttle } = useMobilePerformance();
@@ -291,10 +298,45 @@ const ProspectsMobile: React.FC = () => {
     initialLoading: true,
     maxRetries: 3,
     retryDelay: 2000,
-    onRetry: async () => {
-      await loadProspects();
+  });
+
+  // Hooks de accesibilidad
+  const {
+    settings: accessibilitySettings,
+    isScreenReaderActive,
+    announceToScreenReader,
+    setFocus,
+    updateSettings: updateAccessibilitySettings,
+  } = useMobileAccessibility({
+    onSettingsChange: (newSettings) => {
+      announceToScreenReader('Configuración de accesibilidad actualizada');
     },
   });
+
+  const {
+    isListening: isVoiceListening,
+    isSupported: isVoiceSupported,
+    transcript,
+    confidence,
+    startListening,
+    stopListening,
+    commands,
+  } = useMobileVoiceCommands({
+    enabled: accessibilitySettings.voiceCommands,
+    onCommandRecognized: (command, conf) => {
+      announceToScreenReader(`Comando reconocido: ${command} con ${Math.round(conf * 100)}% de confianza`);
+    },
+  });
+
+  const {
+    isEnabled: isKeyboardEnabled,
+    shortcuts,
+    addShortcut,
+  } = useMobileKeyboardNavigation({
+    enabled: accessibilitySettings.keyboardNavigation,
+  });
+
+  // Hook de offline para gestionar cache y sincronización
 
   // Hook de offline para gestionar cache y sincronización
   const offlineState = useMobileOffline({
@@ -369,6 +411,19 @@ const ProspectsMobile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
+      {/* Skip links para navegación rápida */}
+      <a href="#main-content" className="skip-link sr-only">
+        Saltar al contenido principal
+      </a>
+      <a href="#prospects-list" className="skip-link sr-only">
+        Saltar a la lista de prospectos
+      </a>
+      <a href="#search" className="skip-link sr-only">
+        Saltar a la búsqueda
+      </a>
+      <a href="#accessibility-settings" className="skip-link sr-only">
+        Saltar a configuración de accesibilidad
+      </a>
       {/* Indicador de Pull-to-Refresh */}
       <PullToRefreshIndicator
         progress={pullProgress}
@@ -376,7 +431,7 @@ const ProspectsMobile: React.FC = () => {
         className="absolute top-0 left-0 right-0 z-40"
       />
       {/* Header */}
-      <div className="sticky top-14 z-30 bg-neutral-950/95 backdrop-blur-md border-b border-white/10 px-mobile-lg py-mobile-md">
+      <div id="main-content" className="sticky top-14 z-30 bg-neutral-950/95 backdrop-blur-md border-b border-white/10 px-mobile-lg py-mobile-md">
         <div className="flex items-center justify-between mb-mobile-md">
           <h1 className="text-mobile-lg font-bold mobile-text-optimized">
             Prospectos
@@ -401,11 +456,13 @@ const ProspectsMobile: React.FC = () => {
         <div className="relative mb-mobile-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <input
+            id="search"
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar prospectos..."
             className="w-full pl-10 pr-4 py-mobile-sm bg-neutral-900 border border-white/20 rounded-mobile-lg text-white placeholder-neutral-400 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 mobile-text-optimized"
+            aria-label="Buscar prospectos por nombre, club o posición"
           />
         </div>
 
@@ -483,8 +540,11 @@ const ProspectsMobile: React.FC = () => {
         >
           {/* Lista de Prospectos */}
           <div 
+            id="prospects-list"
             ref={containerRef}
             className="space-y-mobile-md"
+            role="region"
+            aria-label="Lista de prospectos deportivos"
           >
         {loadingState.isLoading ? (
           // Skeleton loading mejorado
@@ -756,6 +816,42 @@ const ProspectsMobile: React.FC = () => {
           console.log('Lighthouse score:', score);
         }}
       />
+
+      {/* Componentes de Accesibilidad */}
+      <MobileSkipLinks
+        onSkip={(linkId) => {
+          console.log('Skip to:', linkId);
+          announceToScreenReader(`Saltado a ${linkId}`);
+        }}
+      />
+
+      <MobileErrorAnnouncer
+        onErrorAnnounced={(error) => {
+          console.log('Error announced:', error);
+        }}
+        onErrorDismissed={(errorId) => {
+          console.log('Error dismissed:', errorId);
+        }}
+      />
+
+      {showAccessibilitySettings && (
+        <MobileAccessibilitySettings
+          className="fixed inset-0 z-50 flex items-center justify-center p-mobile-lg"
+          onClose={() => setShowAccessibilitySettings(false)}
+        />
+      )}
+
+      {/* Botón de accesibilidad flotante */}
+      <MobileHapticButton
+        onClick={() => setShowAccessibilitySettings(true)}
+        hapticType="click"
+        soundType="click"
+        className="fixed bottom-68 left-mobile-lg z-40 p-mobile-md bg-neutral-800 hover:bg-neutral-700 text-white rounded-full shadow-mobile-lg transition-all duration-200"
+        aria-label="Abrir configuración de accesibilidad"
+      >
+        <span className="sr-only">Accesibilidad</span>
+        <span className="text-mobile-lg">♿</span>
+      </MobileHapticButton>
     </div>
   );
 };

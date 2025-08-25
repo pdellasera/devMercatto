@@ -12,3 +12,8 @@ export { default as MobileHapticSettings } from './MobileHapticSettings';
 export { default as MobileLazyImage } from './MobileLazyImage';
 export { default as MobileVirtualList } from './MobileVirtualList';
 export { default as MobilePerformanceMonitor } from './MobilePerformanceMonitor';
+
+// Componentes de accesibilidad
+export { default as MobileAccessibilitySettings } from './MobileAccessibilitySettings';
+export { default as MobileSkipLinks } from './MobileSkipLinks';
+export { default as MobileErrorAnnouncer } from './MobileErrorAnnouncer';
