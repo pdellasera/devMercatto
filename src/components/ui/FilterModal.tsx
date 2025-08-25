@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, ArrowLeftRight } from 'lucide-react';
 import { cn } from '../../utils/cn';
@@ -24,6 +24,8 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 }) => {
   const [minValue, setMinValue] = useState('');
   const [maxValue, setMaxValue] = useState('');
+  const [dynamicTop, setDynamicTop] = useState<number>(position.y);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const handleApply = () => {
     onApply(filterId, {
@@ -34,52 +36,63 @@ export const FilterModal: React.FC<FilterModalProps> = ({
     onClose();
   };
 
-  // Calculate dynamic top position considering scroll
-  const calculateTopPosition = () => {
-    const modalHeight = 200; // Approximate modal height
-    const viewportHeight = window.innerHeight;
-    const scrollY = window.scrollY;
-    
-    // Calculate initial top position relative to viewport
-    let top = position.y - scrollY - 10;
-    
-    // If modal would go below viewport, position it above the dropdown
-    if (top + modalHeight > viewportHeight - 20) {
-      top = position.y - scrollY - modalHeight - 10;
-    }
-    
-    // If modal would go above viewport, position it at the top with margin
-    if (top < 20) {
-      top = 20;
-    }
-    
-    return top;
-  };
+  // Recalcula el top real usando la altura medida del modal y el viewport
+  useEffect(() => {
+    if (!isOpen) return;
 
-  const dynamicTop = calculateTopPosition();
+    const recalc = () => {
+      const viewportHeight = window.innerHeight;
+      const margin = 20;
+      const modalHeight = modalRef.current?.getBoundingClientRect().height || 220;
+
+      // position.y está en coords de viewport (porque viene de getBoundingClientRect)
+      // Centramos verticalmente la burbuja respecto a la opción clickeada
+      let top = position.y - modalHeight / 2;
+
+      // Asegurar dentro del viewport
+      if (top < margin) top = margin;
+      if (top + modalHeight > viewportHeight - margin) top = viewportHeight - modalHeight - margin;
+
+      setDynamicTop(top);
+    };
+
+    // Espera al siguiente frame para tener dimensiones correctas
+    const id = window.requestAnimationFrame(recalc);
+
+    // Recalcular en resize/scroll
+    window.addEventListener('resize', recalc);
+    window.addEventListener('scroll', recalc, { passive: true });
+
+    return () => {
+      window.cancelAnimationFrame(id);
+      window.removeEventListener('resize', recalc);
+      window.removeEventListener('scroll', recalc);
+    };
+  }, [isOpen, position.y]);
 
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
       <motion.div
+        ref={modalRef}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-                 className={cn(
-           "fixed bg-white rounded-lg shadow-xl border border-white z-50",
-           "before:content-[''] before:absolute before:top-4 before:-right-2 before:w-0 before:h-0",
-           "before:border-l-[8px] before:border-r-[8px] before:border-b-[8px] before:border-l-transparent before:border-r-transparent before:border-b-white",
-           "before:rotate-90",
-           "after:content-[''] after:absolute after:top-4 after:-right-3 after:w-0 after:h-0",
-           "after:border-l-[9px] after:border-r-[9px] after:border-b-[9px] after:border-l-transparent after:border-r-transparent after:border-b-white",
-           "after:rotate-90"
-         )}
-                   style={{
-            left: position.x - 920, // Posicionar a la izquierda del dropdown
-            top: dynamicTop
-          }}
+        className={cn(
+          "fixed bg-white rounded-lg shadow-xl border border-white z-50",
+          "before:content-[''] before:absolute before:top-4 before:-right-2 before:w-0 before:h-0",
+          "before:border-l-[8px] before:border-r-[8px] before:border-b-[8px] before:border-l-transparent before:border-r-transparent before:border-b-white",
+          "before:rotate-90",
+          "after:content-[''] after:absolute after:top-4 after:-right-3 after:w-0 after:h-0",
+          "after:border-l-[9px] after:border-r-[9px] after:border-b-[9px] after:border-l-transparent after:border-r-transparent after:border-b-white",
+          "after:rotate-90"
+        )}
+        style={{
+          left: position.x - 920, // Mantener left como estaba corregido
+          top: dynamicTop
+        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
