@@ -43,7 +43,8 @@ export const FilterModal: React.FC<FilterModalProps> = ({
     const recalc = () => {
       const viewportHeight = window.innerHeight;
       const margin = 20;
-      const modalHeight = modalRef.current?.getBoundingClientRect().height || 220;
+      const modalHeight = modalRef.current?.getBoundingClientRect().height || 220
+      ;
 
       // position.y está en coords de viewport (porque viene de getBoundingClientRect)
       // Centramos verticalmente la burbuja respecto a la opción clickeada
@@ -91,7 +92,6 @@ export const FilterModal: React.FC<FilterModalProps> = ({
         )}
         style={{
           left: position.x - 920, // Mantener left como estaba corregido
-          top: dynamicTop
         }}
       >
         {/* Header */}
