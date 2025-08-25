@@ -109,8 +109,8 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
        >
         {/* Dropdown Content */}
         <div className="p-0">
-          {/* Filter Options List */}
-          <div className="max-h-96 overflow-y-auto">
+                     {/* Filter Options List */}
+           <div className="overflow-y-auto">
             {filterOptions.map((option, index) => (
               <motion.div
                 key={option.id}
