@@ -15,6 +15,7 @@ import {
 import { cn } from '../utils/cn';
 import { useMobilePerformance, useMobileGestures } from '../hooks';
 import MobileButton from '../components/ui/MobileButton';
+import { MobileFilters, FilterModalMobile } from '../components/filters';
 
 interface Prospect {
   id: string;
@@ -29,6 +30,7 @@ interface Prospect {
   talla: number;
   potencia: number;
   resistencia: number;
+  velocidad: number;
   avatar?: string;
   isFavorite: boolean;
   lastSeen: string;
@@ -54,6 +56,7 @@ const generateMockProspects = (count: number): Prospect[] => {
     talla: Math.floor(Math.random() * 20) + 160, // 160-179 cm
     potencia: Math.floor(Math.random() * 30) + 70,
     resistencia: Math.floor(Math.random() * 30) + 70,
+    velocidad: Math.floor(Math.random() * 30) + 70,
     isFavorite: Math.random() > 0.7,
     lastSeen: `${Math.floor(Math.random() * 7) + 1} días`,
     location: locations[Math.floor(Math.random() * locations.length)],
@@ -69,6 +72,9 @@ const ProspectsMobile: React.FC = () => {
   const [sortBy, setSortBy] = useState<'ovr' | 'age' | 'name'>('ovr');
   const [showFavorites, setShowFavorites] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   
   const containerRef = useRef<HTMLDivElement>(null);
   const { useLazyLoad, throttle } = useMobilePerformance();
@@ -111,6 +117,63 @@ const ProspectsMobile: React.FC = () => {
       filtered = filtered.filter(prospect => prospect.isFavorite);
     }
 
+    // Filtros avanzados
+    Object.entries(activeFilters).forEach(([key, value]) => {
+      if (value && value !== 'all') {
+        switch (key) {
+          case 'position':
+            if (value !== 'all') {
+              filtered = filtered.filter(prospect => prospect.position === value);
+            }
+            break;
+          case 'age':
+            if (value.min !== undefined && value.max !== undefined) {
+              filtered = filtered.filter(prospect => 
+                prospect.age >= value.min && prospect.age <= value.max
+              );
+            }
+            break;
+          case 'ovr':
+            if (value.min !== undefined && value.max !== undefined) {
+              filtered = filtered.filter(prospect => 
+                prospect.ovr >= value.min && prospect.ovr <= value.max
+              );
+            }
+            break;
+          case 'club':
+            if (Array.isArray(value) && value.length > 0) {
+              filtered = filtered.filter(prospect => value.includes(prospect.club));
+            }
+            break;
+          case 'location':
+            if (Array.isArray(value) && value.length > 0) {
+              filtered = filtered.filter(prospect => value.includes(prospect.location));
+            }
+            break;
+          case 'attributes':
+            if (Array.isArray(value) && value.length > 0) {
+              filtered = filtered.filter(prospect => {
+                return value.some((attr: string) => {
+                  switch (attr) {
+                    case 'potencia':
+                      return prospect.potencia >= 80;
+                    case 'velocidad':
+                      return prospect.velocidad >= 80;
+                    case 'resistencia':
+                      return prospect.resistencia >= 80;
+                    case 'tecnica':
+                      return prospect.ovrTecnico >= 80;
+                    default:
+                      return false;
+                  }
+                });
+              });
+            }
+            break;
+        }
+      }
+    });
+
     // Ordenar
     filtered.sort((a, b) => {
       switch (sortBy) {
@@ -126,7 +189,7 @@ const ProspectsMobile: React.FC = () => {
     });
 
     setFilteredProspects(filtered);
-  }, [prospects, searchQuery, selectedPosition, showFavorites, sortBy]);
+  }, [prospects, searchQuery, selectedPosition, showFavorites, sortBy, activeFilters]);
 
   // Lazy load para prospectos
   const { visibleItems, hasMore, loadingRef, loadMore } = useLazyLoad(
@@ -153,6 +216,15 @@ const ProspectsMobile: React.FC = () => {
     const newData = generateMockProspects(50);
     setProspects(newData);
     setIsRefreshing(false);
+  };
+
+  const handleFiltersApply = (filters: Record<string, any>) => {
+    setActiveFilters(filters);
+  };
+
+  const handleFilterModalApply = (value: any) => {
+    // Aquí puedes manejar filtros específicos si es necesario
+    console.log('Filter modal applied:', value);
   };
 
   // Scroll to top
@@ -243,6 +315,21 @@ const ProspectsMobile: React.FC = () => {
             <option value="age">Ordenar por Edad</option>
             <option value="name">Ordenar por Nombre</option>
           </select>
+
+          <MobileButton
+            size="sm"
+            variant="outline"
+            onClick={() => setIsFiltersOpen(true)}
+            className="flex-shrink-0"
+          >
+            <Filter className="w-3 h-3 mr-mobile-xs" />
+            Filtros
+            {Object.keys(activeFilters).length > 0 && (
+              <span className="ml-mobile-xs px-mobile-xs py-mobile-xs bg-primary-600 text-white text-mobile-xs rounded-full">
+                {Object.keys(activeFilters).length}
+              </span>
+            )}
+          </MobileButton>
         </div>
       </div>
 
@@ -424,6 +511,26 @@ const ProspectsMobile: React.FC = () => {
       >
         <ArrowUp className="w-5 h-5" />
       </button>
+
+      {/* Componentes de Filtros */}
+      <MobileFilters
+        isOpen={isFiltersOpen}
+        onClose={() => setIsFiltersOpen(false)}
+        onApply={handleFiltersApply}
+      />
+
+      <FilterModalMobile
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApply={handleFilterModalApply}
+        title="Filtro Específico"
+        options={[
+          { id: '1', label: 'Opción 1', value: 'option1' },
+          { id: '2', label: 'Opción 2', value: 'option2' },
+          { id: '3', label: 'Opción 3', value: 'option3' },
+        ]}
+        type="single"
+      />
     </div>
   );
 };
