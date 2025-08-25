@@ -587,7 +587,7 @@ export const Dashboard: React.FC = () => {
           </motion.div>
 
           {/* Enhanced Pagination */}
-          {prospects.length > 0 && pagination.totalPages > 1 && (
+          {prospects.length > 0 && pagination.totalPages && pagination.totalPages > 1 && (
             <motion.div variants={itemVariants} className="mt-8">
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between">
@@ -612,7 +612,7 @@ export const Dashboard: React.FC = () => {
                     </Button>
 
                     <div className="flex items-center space-x-2">
-                      {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                      {Array.from({ length: Math.min(5, pagination.totalPages || 1) }, (_, i) => {
                         const pageNum = i + 1;
                         return (
                           <Button
@@ -632,7 +632,7 @@ export const Dashboard: React.FC = () => {
                       variant="outline"
                       size="sm"
                       className="glass-button"
-                      disabled={pagination.page >= pagination.totalPages}
+                      disabled={pagination.page >= (pagination.totalPages || 1)}
                       onClick={() => setPage(pagination.page + 1)}
                     >
                       Siguiente
