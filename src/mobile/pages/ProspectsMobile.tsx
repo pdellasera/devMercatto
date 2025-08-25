@@ -13,7 +13,15 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { cn } from '../utils/cn';
-import { useMobilePerformance, useMobileGestures, useMobileLoading, useMobileOffline, useMobileHaptic } from '../hooks';
+import { 
+  useMobilePerformance, 
+  useMobileGestures, 
+  useMobileLoading, 
+  useMobileOffline, 
+  useMobileHaptic,
+  useMobileDebounce,
+  useMobilePerformanceMetrics
+} from '../hooks';
 import MobileButton from '../components/ui/MobileButton';
 import { MobileFilters, FilterModalMobile } from '../components/filters';
 import { 
@@ -26,7 +34,10 @@ import {
   MobileOfflineIndicator,
   MobileCacheManager,
   MobileHapticButton,
-  MobileHapticSettings
+  MobileHapticSettings,
+  MobileLazyImage,
+  MobileVirtualList,
+  MobilePerformanceMonitor
 } from '../components/ui';
 
 interface Prospect {
@@ -92,6 +103,9 @@ const ProspectsMobile: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { useLazyLoad, throttle } = useMobilePerformance();
 
+  // Hook de debounce para búsquedas optimizadas
+  const debouncedSearchQuery = useMobileDebounce(searchQuery, { delay: 300 });
+
   // Función para cargar prospectos
   const loadProspects = async () => {
     // Verificar cache primero
@@ -120,16 +134,16 @@ const ProspectsMobile: React.FC = () => {
     loadingState.withLoading(loadProspects());
   }, []);
 
-  // Filtrar prospectos
+  // Filtrar prospectos con debounce optimizado
   useEffect(() => {
     let filtered = prospects;
 
-    // Filtro por búsqueda
-    if (searchQuery) {
+    // Filtro por búsqueda con debounce
+    if (debouncedSearchQuery) {
       filtered = filtered.filter(prospect =>
-        prospect.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        prospect.club.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        prospect.position.toLowerCase().includes(searchQuery.toLowerCase())
+        prospect.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        prospect.club.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        prospect.position.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
       );
     }
 
@@ -215,7 +229,7 @@ const ProspectsMobile: React.FC = () => {
     });
 
     setFilteredProspects(filtered);
-  }, [prospects, searchQuery, selectedPosition, showFavorites, sortBy, activeFilters]);
+  }, [prospects, debouncedSearchQuery, selectedPosition, showFavorites, sortBy, activeFilters]);
 
   // Lazy load para prospectos
   const { visibleItems, hasMore, loadingRef, loadMore } = useLazyLoad(
@@ -298,6 +312,16 @@ const ProspectsMobile: React.FC = () => {
     hapticEnabled: true,
     defaultVolume: 0.5,
     defaultIntensity: 0.5,
+  });
+
+  // Hook de métricas de performance
+  const performanceMetrics = useMobilePerformanceMetrics({
+    enableMemoryMonitoring: true,
+    enableNetworkMonitoring: true,
+    enableWebVitals: true,
+    onMetricsUpdate: (metrics) => {
+      console.log('Performance metrics updated:', metrics);
+    },
   });
 
   const handleFiltersApply = (filters: Record<string, any>) => {
@@ -509,12 +533,17 @@ const ProspectsMobile: React.FC = () => {
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className="flex items-center gap-mobile-md">
-                {/* Avatar */}
+                {/* Avatar con lazy loading */}
                 {prospect.avatar ? (
-                  <img
+                  <MobileLazyImage
                     src={prospect.avatar}
                     alt={prospect.name}
-                    className="w-12 h-12 rounded-mobile-lg object-cover"
+                    className="w-12 h-12 rounded-mobile-lg"
+                    aspectRatio="square"
+                    objectFit="cover"
+                    showLoadingIndicator={false}
+                    showErrorIndicator={false}
+                    fallbackSrc="/images/placeholder-avatar.png"
                   />
                 ) : (
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-mobile-lg flex items-center justify-center">
@@ -715,6 +744,16 @@ const ProspectsMobile: React.FC = () => {
         className="fixed bottom-44 left-mobile-lg right-mobile-lg z-40"
         onSettingsChange={(settings) => {
           console.log('Haptic settings changed:', settings);
+        }}
+      />
+
+      {/* Monitor de performance */}
+      <MobilePerformanceMonitor
+        className="fixed bottom-56 left-mobile-lg right-mobile-lg z-40"
+        showDetails={true}
+        autoStart={true}
+        onScoreChange={(score) => {
+          console.log('Lighthouse score:', score);
         }}
       />
     </div>

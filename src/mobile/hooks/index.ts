@@ -29,6 +29,12 @@ export { default as useMobileOffline } from './useMobileOffline';
 // Hooks de haptic
 export { default as useMobileHaptic } from './useMobileHaptic';
 
+// Hooks de performance
+export { default as useMobileImageLazy } from './useMobileImageLazy';
+export { default as useMobileDebounce, useMobileDebouncedCallback } from './useMobileDebounce';
+export { default as useMobileVirtualScroll } from './useMobileVirtualScroll';
+export { default as useMobilePerformanceMetrics } from './useMobilePerformanceMetrics';
+
 // Tipos comunes
 export type {
   BreakpointState,
