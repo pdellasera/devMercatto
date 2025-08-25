@@ -34,6 +34,45 @@ export const FilterModal: React.FC<FilterModalProps> = ({
     onClose();
   };
 
+  // Calculate dynamic positioning
+  const calculatePosition = () => {
+    const modalHeight = 200; // Approximate modal height
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    
+    // Calculate left position (to the left of the dropdown)
+    const left = Math.max(20, position.x - 320); // Ensure it doesn't go off-screen left
+    
+    // Calculate top position based on available space
+    let top = position.y - 10;
+    let isAbove = false;
+    
+    // If modal would go below viewport, position it above the dropdown
+    if (top + modalHeight > viewportHeight - 20) {
+      top = position.y - modalHeight - 10;
+      isAbove = true;
+    }
+    
+    // If modal would go above viewport, position it at the top with margin
+    if (top < 20) {
+      top = 20;
+      isAbove = false;
+    }
+    
+    // If modal would go off-screen right, adjust left position
+    if (left + 320 > viewportWidth - 20) {
+      return {
+        left: viewportWidth - 340,
+        top: top,
+        isAbove: isAbove
+      };
+    }
+    
+    return { left, top, isAbove };
+  };
+
+  const modalPosition = calculatePosition();
+
   if (!isOpen) return null;
 
   return (
@@ -45,16 +84,13 @@ export const FilterModal: React.FC<FilterModalProps> = ({
         transition={{ duration: 0.2, ease: "easeOut" }}
                  className={cn(
            "fixed bg-white rounded-lg shadow-xl border border-white z-50",
-           "before:content-[''] before:absolute before:top-4 before:-right-2 before:w-0 before:h-0",
-           "before:border-l-[8px] before:border-r-[8px] before:border-b-[8px] before:border-l-transparent before:border-r-transparent before:border-b-white",
-           "before:rotate-90",
-           "after:content-[''] after:absolute after:top-4 after:-right-3 after:w-0 after:h-0",
-           "after:border-l-[9px] after:border-r-[9px] after:border-b-[9px] after:border-l-transparent after:border-r-transparent after:border-b-white",
-           "after:rotate-90"
+           modalPosition.isAbove 
+             ? "before:content-[''] before:absolute before:bottom-4 before:-right-2 before:w-0 before:h-0 before:border-l-[8px] before:border-r-[8px] before:border-t-[8px] before:border-l-transparent before:border-r-transparent before:border-t-white before:rotate-90 after:content-[''] after:absolute after:bottom-4 after:-right-3 after:w-0 after:h-0 after:border-l-[9px] after:border-r-[9px] after:border-t-[9px] after:border-l-transparent after:border-r-transparent after:border-t-white after:rotate-90"
+             : "before:content-[''] before:absolute before:top-4 before:-right-2 before:w-0 before:h-0 before:border-l-[8px] before:border-r-[8px] before:border-b-[8px] before:border-l-transparent before:border-r-transparent before:border-b-white before:rotate-90 after:content-[''] after:absolute after:top-4 after:-right-3 after:w-0 after:h-0 after:border-l-[9px] after:border-r-[9px] after:border-b-[9px] after:border-l-transparent after:border-r-transparent after:border-b-white after:rotate-90"
          )}
          style={{
-           left: position.x - 920, // Posicionar a la izquierda del dropdown
-           top: position.y - 90
+           left: modalPosition.left,
+           top: modalPosition.top
          }}
       >
         {/* Header */}
