@@ -1,26 +1,56 @@
-import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import { cn } from '../utils/cn';
+import MobileHeader from '../components/navigation/MobileHeader';
+import MobileNavigation from '../components/navigation/MobileNavigation';
 
-const MobileLayout: React.FC = () => {
+interface MobileLayoutProps {
+  showHeader?: boolean;
+  showNavigation?: boolean;
+  className?: string;
+}
+
+const MobileLayout: React.FC<MobileLayoutProps> = ({
+  showHeader = true,
+  showNavigation = true,
+  className,
+}) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100">
-      <header className="sticky top-0 z-10 border-b border-white/10 bg-neutral-950/80 backdrop-blur">
-        <div className="mx-auto flex h-12 max-w-screen-sm items-center justify-between px-4">
-          <Link to="/mobile" className="text-sm font-semibold">Mercatto</Link>
-          <nav className="flex items-center gap-3 text-xs text-neutral-300">
-            <Link to="/mobile" className="hover:text-white">Inicio</Link>
-            <Link to="/mobile/login" className="hover:text-white">Login</Link>
-          </nav>
-        </div>
-      </header>
+    <div className={cn('min-h-screen bg-neutral-950 text-neutral-100', className)}>
+      {/* Header */}
+      {showHeader && (
+        <MobileHeader
+          onMenuToggle={setIsMenuOpen}
+          onSearch={(query) => {
+            console.log('Search query:', query);
+            // Implementar lógica de búsqueda
+          }}
+        />
+      )}
 
-      <main>
+      {/* Contenido principal */}
+      <main
+        className={cn(
+          'flex-1 overflow-auto',
+          showHeader ? 'pt-14' : '', // Espacio para header
+          showNavigation ? 'pb-20' : '', // Espacio para navegación inferior
+          'mobile-gesture-area'
+        )}
+      >
         <Outlet />
       </main>
 
-      <footer className="mx-auto max-w-screen-sm px-4 py-6 text-center text-xs text-neutral-500">
-        © Mercatto — Vista móvil
-      </footer>
+      {/* Navegación inferior */}
+      {showNavigation && (
+        <MobileNavigation
+          onTabChange={(tabId) => {
+            console.log('Tab changed to:', tabId);
+            // Implementar lógica de cambio de tab
+          }}
+        />
+      )}
     </div>
   );
 };
