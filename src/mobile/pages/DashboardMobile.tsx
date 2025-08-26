@@ -233,78 +233,80 @@ export const DashboardMobile: React.FC = () => {
     },
   });
 
-  // Table columns configuration - Adaptada para mobile
+  // Table columns configuration - Adaptada para mobile con responsive design
   const columns = [
     {
       key: 'nombre',
       header: 'Jugador',
       accessor: (prospect: Prospect) => (
-        <div className="flex items-center space-x-3 py-2 hover:bg-white/5 transition-all duration-200 rounded-lg px-1">
-                     {/* Avatar con indicador de estado */}
-           <div className="relative flex-shrink-0">
-             <Avatar
-               src={prospect.imgData}
-               alt={`${prospect.name} - ${prospect.position}`}
-               fallback={prospect.name}
-               size="lg"
-               shape="square"
-               className="shadow-lg"
-             />
-             {/* Indicador de estado premium */}
-             {prospect.fullaccess && (
-               <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                 <span className="text-[6px] font-bold text-black">★</span>
-               </div>
-             )}
-           </div>
+        <div className="flex items-start space-x-2 sm:space-x-3 py-1 sm:py-2 hover:bg-white/5 transition-all duration-200 rounded-lg px-0.5 sm:px-1 min-w-0">
+          {/* Avatar con indicador de estado */}
+          <div className="relative flex-shrink-0">
+            <Avatar
+              src={prospect.imgData}
+              alt={`${prospect.name} - ${prospect.position}`}
+              fallback={prospect.name}
+              size="sm"
+              shape="square"
+              className="shadow-lg w-8 h-8 sm:w-10 sm:h-10"
+            />
+            {/* Indicador de estado premium */}
+            {prospect.fullaccess && (
+              <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-[5px] sm:text-[6px] font-bold text-black">★</span>
+              </div>
+            )}
+          </div>
 
-          {/* Información del jugador - Layout compacto */}
-          <div className="flex-1 min-w-0">
-            {/* Primera línea: Nombre, edad y posición */}
-            <div className="flex items-center space-x-2 mb-1">
-              <h3 className="font-bold text-white text-sm leading-tight truncate">
+          {/* Información del jugador - Layout ultra-compacto y responsive */}
+          <div className="flex-1 min-w-0 overflow-hidden">
+            {/* Primera línea: Nombre y edad */}
+            <div className="flex items-center space-x-1 sm:space-x-2 mb-0.5 sm:mb-1 min-w-0">
+              <h3 className="font-bold text-white text-xs sm:text-sm leading-tight truncate flex-1 min-w-0">
                 {prospect.name}
               </h3>
-              <span className="text-xs text-gray-400 bg-gray-700/50 px-1.5 py-0.5 rounded-full">
+              <span className="text-[10px] sm:text-xs text-gray-400 bg-gray-700/50 px-1 sm:px-1.5 py-0.5 rounded-full flex-shrink-0">
                 {prospect.age} años
               </span>
-              <div className="flex items-center space-x-1">
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                <span className="text-xs text-gray-300 font-medium">
+            </div>
+
+            {/* Segunda línea: Posición y club */}
+            <div className="flex items-center space-x-1 sm:space-x-2 mb-0.5 sm:mb-1 min-w-0">
+              <div className="flex items-center space-x-0.5 sm:space-x-1 flex-shrink-0">
+                <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-blue-400 rounded-full"></div>
+                <span className="text-[10px] sm:text-xs text-gray-300 font-medium truncate">
                   {prospect.position}
                 </span>
               </div>
-            </div>
-
-            {/* Segunda línea: Club y contrato en línea */}
-            <div className="flex items-center space-x-3 text-xs">
-              <div className="flex items-center space-x-1">
-                <span className="text-gray-400">Club:</span>
-                <span className="text-white font-semibold bg-gray-700/50 px-1.5 py-0.5 rounded-full">
+              <div className="flex items-center space-x-0.5 sm:space-x-1 min-w-0 flex-1">
+                <span className="text-[10px] sm:text-xs text-gray-400 flex-shrink-0">Club:</span>
+                <span className="text-[10px] sm:text-xs text-white font-semibold bg-gray-700/50 px-1 sm:px-1.5 py-0.5 rounded-full truncate">
                   {prospect.status || 'Sin club'}
                 </span>
               </div>
-              <div className="flex items-center space-x-1">
-                <span className="text-gray-400">Contrato:</span>
-                <span className="text-white font-semibold">
-                  {prospect.birthdayDate ? new Date(prospect.birthdayDate).toLocaleDateString('es-ES') : 'Sin fecha'}
-                </span>
-              </div>
             </div>
 
-            {/* Tercera línea: Badges de estado */}
-            <div className="flex items-center space-x-2 mt-1">
-              {prospect.fullaccess && (
-                <span className="text-[9px] bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-1.5 py-0.5 rounded-full font-bold shadow-sm">
-                  PREMIUM
+            {/* Tercera línea: Contrato y badges */}
+            <div className="flex items-center space-x-1 sm:space-x-2 min-w-0">
+              <div className="flex items-center space-x-0.5 sm:space-x-1 min-w-0 flex-1">
+                <span className="text-[10px] sm:text-xs text-gray-400 flex-shrink-0">Contrato:</span>
+                <span className="text-[10px] sm:text-xs text-white font-semibold truncate">
+                  {prospect.birthdayDate ? new Date(prospect.birthdayDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'Sin fecha'}
                 </span>
-              )}
-              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${prospect.status === 'Contratado'
-                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                  : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                }`}>
-                {prospect.status === 'Contratado' ? 'ACTIVO' : 'PENDIENTE'}
-              </span>
+              </div>
+              <div className="flex items-center space-x-1 flex-shrink-0">
+                {prospect.fullaccess && (
+                  <span className="text-[8px] sm:text-[9px] bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-1 sm:px-1.5 py-0.5 rounded-full font-bold shadow-sm">
+                    PREMIUM
+                  </span>
+                )}
+                <span className={`text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0 ${prospect.status === 'Contratado'
+                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                    : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                  }`}>
+                  {prospect.status === 'Contratado' ? 'ACTIVO' : 'PENDIENTE'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -315,7 +317,7 @@ export const DashboardMobile: React.FC = () => {
       header: 'Talla',
       accessor: (prospect: Prospect) => (
         <div className="text-center">
-          <div className="font-semibold text-sm text-white">{prospect.talla}m</div>
+          <div className="font-semibold text-xs sm:text-sm text-white">{prospect.talla}m</div>
         </div>
       ),
     },
@@ -326,7 +328,7 @@ export const DashboardMobile: React.FC = () => {
         const overall = prospect.ovrGeneral || 0;
         return (
           <div className="text-center">
-            <div className={`font-semibold text-sm px-2 py-1 rounded-sm ${overall === 0 ? 'text-gray-400' :
+            <div className={`font-semibold text-xs sm:text-sm px-1 sm:px-2 py-0.5 sm:py-1 rounded-sm ${overall === 0 ? 'text-gray-400' :
               overall >= 90 ? 'text-green-400' :
                 overall >= 70 ? 'text-yellow-400' :
                   overall >= 60 ? 'text-orange-400' :
@@ -343,7 +345,7 @@ export const DashboardMobile: React.FC = () => {
       header: 'Físico',
       accessor: (prospect: Prospect) => (
         <div className="text-center">
-          <div className={`font-semibold text-sm ${prospect.ovrFisico === 0 ? 'text-gray-400' :
+          <div className={`font-semibold text-xs sm:text-sm ${prospect.ovrFisico === 0 ? 'text-gray-400' :
             prospect.ovrFisico >= 90 ? 'text-green-400' :
               prospect.ovrFisico >= 70 ? 'text-yellow-400' :
                 prospect.ovrFisico >= 60 ? 'text-orange-400' :
@@ -359,7 +361,7 @@ export const DashboardMobile: React.FC = () => {
       header: 'Potencia',
       accessor: (prospect: Prospect) => (
         <div className="text-center">
-          <div className={`font-semibold text-sm ${prospect.potencia === 0 ? 'text-gray-400' :
+          <div className={`font-semibold text-xs sm:text-sm ${prospect.potencia === 0 ? 'text-gray-400' :
             prospect.potencia >= 90 ? 'text-green-400' :
               prospect.potencia >= 70 ? 'text-yellow-400' :
                 prospect.potencia >= 60 ? 'text-orange-400' :
@@ -375,7 +377,7 @@ export const DashboardMobile: React.FC = () => {
       header: 'Resistencia',
       accessor: (prospect: Prospect) => (
         <div className="text-center">
-          <div className={`font-semibold text-sm ${prospect.resistencia === 0 ? 'text-gray-400' :
+          <div className={`font-semibold text-xs sm:text-sm ${prospect.resistencia === 0 ? 'text-gray-400' :
             prospect.resistencia >= 90 ? 'text-green-400' :
               prospect.resistencia >= 70 ? 'text-yellow-400' :
                 prospect.resistencia >= 60 ? 'text-orange-400' :
@@ -391,7 +393,7 @@ export const DashboardMobile: React.FC = () => {
       header: 'Técnico',
       accessor: (prospect: Prospect) => (
         <div className="text-center">
-          <div className={`font-semibold text-sm ${prospect.ovrTecnico === 0 ? 'text-gray-400' :
+          <div className={`font-semibold text-xs sm:text-sm ${prospect.ovrTecnico === 0 ? 'text-gray-400' :
             prospect.ovrTecnico >= 90 ? 'text-green-400' :
               prospect.ovrTecnico >= 70 ? 'text-yellow-400' :
                 prospect.ovrTecnico >= 60 ? 'text-orange-400' :
@@ -407,7 +409,7 @@ export const DashboardMobile: React.FC = () => {
       header: 'Partido',
       accessor: (prospect: Prospect) => (
         <div className="text-center">
-          <div className={`font-semibold text-sm ${prospect.overCompetencia === 0 ? 'text-gray-400' :
+          <div className={`font-semibold text-xs sm:text-sm ${prospect.overCompetencia === 0 ? 'text-gray-400' :
             prospect.overCompetencia >= 90 ? 'text-green-400' :
               prospect.overCompetencia >= 70 ? 'text-yellow-400' :
                 prospect.overCompetencia >= 60 ? 'text-orange-400' :
@@ -424,12 +426,12 @@ export const DashboardMobile: React.FC = () => {
       accessor: (prospect: Prospect) => (
         <div className="flex items-center justify-center">
           {prospect.videos ? (
-            <div className="w-6 h-6 bg-gradient-to-br from-white/20 to-white/10 rounded flex items-center justify-center">
-              <span className="text-red-400 text-xs">▶</span>
+            <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-white/20 to-white/10 rounded flex items-center justify-center">
+              <span className="text-red-400 text-[10px] sm:text-xs">▶</span>
             </div>
           ) : (
-            <div className="w-6 h-6 bg-gray-700/30 rounded flex items-center justify-center">
-              <span className="text-gray-500 text-xs">—</span>
+            <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-700/30 rounded flex items-center justify-center">
+              <span className="text-gray-500 text-[10px] sm:text-xs">—</span>
             </div>
           )}
         </div>
@@ -443,7 +445,7 @@ export const DashboardMobile: React.FC = () => {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="max-w-full mx-auto px-2 sm:px-3 lg:px-4 py-1 pb-20 flex flex-col flex-1"
+        className="max-w-full mx-auto px-1 sm:px-2 lg:px-4 py-1 pb-16 sm:pb-20 flex flex-col flex-1"
       >
         {/* Authentication Toast */}
         {!isAuthenticated && showAuthToast && (
