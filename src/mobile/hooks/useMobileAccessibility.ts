@@ -55,6 +55,12 @@ const useMobileAccessibility = (
   
   const liveRegionRef = useRef<HTMLDivElement | null>(null);
   const focusHistoryRef = useRef<string[]>([]);
+  const onSettingsChangeRef = useRef(onSettingsChange);
+
+  // Actualizar la referencia del callback
+  useEffect(() => {
+    onSettingsChangeRef.current = onSettingsChange;
+  }, [onSettingsChange]);
 
   // Verificar soporte de tecnologías de accesibilidad
   useEffect(() => {
@@ -159,42 +165,45 @@ const useMobileAccessibility = (
 
   // Actualizar configuraciones
   const updateSettings = useCallback((newSettings: Partial<AccessibilitySettings>) => {
-    const updatedSettings = { ...settings, ...newSettings };
-    setSettings(updatedSettings);
-    
-    // Aplicar cambios inmediatamente
-    if (newSettings.highContrast !== undefined) {
-      document.documentElement.classList.toggle('high-contrast', newSettings.highContrast);
-    }
-    
-    if (newSettings.largeText !== undefined) {
-      document.documentElement.classList.toggle('large-text', newSettings.largeText);
-    }
-    
-    if (newSettings.reducedMotion !== undefined) {
-      document.documentElement.classList.toggle('reduced-motion', newSettings.reducedMotion);
-    }
-    
-    if (newSettings.focusVisible !== undefined) {
-      document.documentElement.classList.toggle('focus-visible', newSettings.focusVisible);
-    }
-    
-    // Notificar cambios
-    onSettingsChange?.(updatedSettings);
-    
-    // Anunciar cambios al screen reader
-    if (newSettings.highContrast !== undefined) {
-      announceToScreenReader(
-        newSettings.highContrast ? 'Alto contraste activado' : 'Alto contraste desactivado'
-      );
-    }
-    
-    if (newSettings.largeText !== undefined) {
-      announceToScreenReader(
-        newSettings.largeText ? 'Texto grande activado' : 'Texto grande desactivado'
-      );
-    }
-  }, [settings, onSettingsChange, announceToScreenReader]);
+    setSettings(prevSettings => {
+      const updatedSettings = { ...prevSettings, ...newSettings };
+      
+      // Aplicar cambios inmediatamente
+      if (newSettings.highContrast !== undefined) {
+        document.documentElement.classList.toggle('high-contrast', newSettings.highContrast);
+      }
+      
+      if (newSettings.largeText !== undefined) {
+        document.documentElement.classList.toggle('large-text', newSettings.largeText);
+      }
+      
+      if (newSettings.reducedMotion !== undefined) {
+        document.documentElement.classList.toggle('reduced-motion', newSettings.reducedMotion);
+      }
+      
+      if (newSettings.focusVisible !== undefined) {
+        document.documentElement.classList.toggle('focus-visible', newSettings.focusVisible);
+      }
+      
+      // Notificar cambios
+      onSettingsChangeRef.current?.(updatedSettings);
+      
+      // Anunciar cambios al screen reader
+      if (newSettings.highContrast !== undefined) {
+        announceToScreenReader(
+          newSettings.highContrast ? 'Alto contraste activado' : 'Alto contraste desactivado'
+        );
+      }
+      
+      if (newSettings.largeText !== undefined) {
+        announceToScreenReader(
+          newSettings.largeText ? 'Texto grande activado' : 'Texto grande desactivado'
+        );
+      }
+      
+      return updatedSettings;
+    });
+  }, [announceToScreenReader]);
 
   // Resetear configuraciones
   const resetSettings = useCallback(() => {
@@ -213,9 +222,9 @@ const useMobileAccessibility = (
     // Limpiar clases
     document.documentElement.classList.remove('high-contrast', 'large-text', 'reduced-motion', 'focus-visible');
     
-    onSettingsChange?.(defaultSettings);
+    onSettingsChangeRef.current?.(defaultSettings);
     announceToScreenReader('Configuraciones de accesibilidad restablecidas');
-  }, [onSettingsChange, announceToScreenReader]);
+  }, [announceToScreenReader]);
 
   // Obtener clases CSS para accesibilidad
   const getAccessibilityClassNames = useCallback(() => {
@@ -230,24 +239,31 @@ const useMobileAccessibility = (
     return classes.join(' ');
   }, [settings]);
 
-  // Detectar preferencias del sistema
+  // Detectar preferencias del sistema (separado para evitar loop infinito)
   useEffect(() => {
     const mediaQueryReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const mediaQueryHighContrast = window.matchMedia('(prefers-contrast: high)');
     
     const handleReducedMotionChange = (e: MediaQueryListEvent) => {
-      updateSettings({ reducedMotion: e.matches });
+      setSettings(prevSettings => ({
+        ...prevSettings,
+        reducedMotion: e.matches
+      }));
     };
     
     const handleHighContrastChange = (e: MediaQueryListEvent) => {
-      updateSettings({ highContrast: e.matches });
+      setSettings(prevSettings => ({
+        ...prevSettings,
+        highContrast: e.matches
+      }));
     };
     
     // Aplicar preferencias iniciales
-    updateSettings({
+    setSettings(prevSettings => ({
+      ...prevSettings,
       reducedMotion: mediaQueryReducedMotion.matches,
       highContrast: mediaQueryHighContrast.matches,
-    });
+    }));
     
     // Escuchar cambios
     mediaQueryReducedMotion.addEventListener('change', handleReducedMotionChange);
@@ -257,7 +273,7 @@ const useMobileAccessibility = (
       mediaQueryReducedMotion.removeEventListener('change', handleReducedMotionChange);
       mediaQueryHighContrast.removeEventListener('change', handleHighContrastChange);
     };
-  }, [updateSettings]);
+  }, []);
 
   return {
     settings,

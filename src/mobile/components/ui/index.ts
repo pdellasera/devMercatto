@@ -17,3 +17,4 @@ export { default as MobilePerformanceMonitor } from './MobilePerformanceMonitor'
 export { default as MobileAccessibilitySettings } from './MobileAccessibilitySettings';
 export { default as MobileSkipLinks } from './MobileSkipLinks';
 export { default as MobileErrorAnnouncer } from './MobileErrorAnnouncer';
+export { default as TableMobile } from './TableMobile';
