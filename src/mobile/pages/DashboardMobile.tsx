@@ -194,6 +194,27 @@ export const DashboardMobile: React.FC = () => {
     }).format(value);
   };
 
+  // Helper: convertir código de país (ISO-3166 alpha-2) a emoji de bandera
+  const countryCodeToFlag = (code?: string): string => {
+    if (!code || typeof code !== 'string') return '🏳️';
+    const cc = code.trim().toUpperCase();
+    if (cc.length !== 2) return '🏳️';
+    const A = 0x1F1E6;
+    const base = 'A'.charCodeAt(0);
+    const first = A + (cc.charCodeAt(0) - base);
+    const second = A + (cc.charCodeAt(1) - base);
+    return String.fromCodePoint(first) + String.fromCodePoint(second);
+  };
+
+  // Helper: obtener posible código de país desde Prospect (flexible con claves comunes)
+  const getProspectCountryCode = (p: Prospect): string | undefined => {
+    // Intentar varias propiedades conocidas
+    const anyP: any = p as any;
+    return (
+      anyP.countryCode || anyP.nationalityCode || anyP.iso2 || anyP.country || anyP.nationality || anyP.pais || undefined
+    );
+  };
+
   // Refresh
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -243,8 +264,8 @@ export const DashboardMobile: React.FC = () => {
       accessor: (prospect: Prospect, index: number, theme?: 'dark' | 'light') => (
         <div className="text-center">
           <div className={cn(
-            "font-semibold text-xs",
-            resolvedTheme === 'light' ? "text-gray-500" : "text-gray-400"
+            "font-semibold text-sm sm:text-base",
+            resolvedTheme === 'light' ? "text-gray-600" : "text-gray-400"
           )}>{index + 1}</div>
         </div>
       ),
@@ -253,7 +274,7 @@ export const DashboardMobile: React.FC = () => {
       key: 'nombre',
       header: 'Jugadores',
       accessor: (prospect: Prospect, index: number, theme?: 'dark' | 'light') => (
-        <div className="flex items-center gap-1 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
           {/* Avatar */}
           <div className="relative flex-shrink-0">
             <Avatar
@@ -262,7 +283,7 @@ export const DashboardMobile: React.FC = () => {
               fallback={prospect.name}
               size="sm"
               shape="circle"
-              className="shadow-lg w-6 h-6 sm:w-8 sm:h-8"
+              className="shadow-lg w-7 h-7 sm:w-9 sm:h-9"
             />
             {/* Indicador de estado premium */}
             {prospect.fullaccess && (
@@ -274,50 +295,33 @@ export const DashboardMobile: React.FC = () => {
 
           {/* Información del jugador */}
           <div className="min-w-0 flex flex-col items-start justify-start">
-            <h3 className="font-bold text-blue-400 text-xs leading-tight truncate">{prospect.name}</h3>
-            <div className="flex items-center gap-1">
+            {/* Primera línea: Bandera + Nombre (izquierda) y Edad (derecha) */}
+            <div className="flex items-center justify-between w-ld min-w-0">
+              <div className="flex items-center gap-1 min-w-0">
+                <img
+                  src="/flag_co.png"
+                  alt="Bandera"
+                  className="w-4 h-3 rounded-[2px] object-cover flex-shrink-0"
+                />
+                <h3 className={cn(
+                  "font-bold leading-tight whitespace-normal break-words text-[14px] sm:text-[14px]",
+                  resolvedTheme === 'light' ? "text-blue-700" : "text-blue-300"
+                )} style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{prospect.name}</h3>
+              </div>
               <span className={cn(
-                "text-[10px]",
-                theme === 'light' ? "text-gray-600" : "text-gray-300"
-              )}>{prospect.position}</span>
-              <span className={cn(
-                "text-[8px]",
-                theme === 'light' ? "text-gray-500" : "text-gray-400"
-              )}>•</span>
-              <span className={cn(
-                "text-[10px]",
+                "ml-2 flex-shrink-0 text-[10px] sm:text-[13px]",
                 theme === 'light' ? "text-gray-600" : "text-gray-300"
               )}>{prospect.age} años</span>
+            </div>
+
+            {/* Segunda línea: posición • CO (badge con bandera emoji ya reemplazado arriba) */}
+            <div className="flex items-center gap-1">
               <span className={cn(
-                "text-[8px]",
-                theme === 'light' ? "text-gray-500" : "text-gray-400"
-              )}>•</span>
-              <div className={cn(
-                "w-4 h-2 rounded-sm flex items-center justify-center",
-                theme === 'light' ? "bg-gray-200" : "bg-gray-600"
-              )}>
-                <span className="text-[5px] text-white font-semibold">CO</span>
-              </div>
+                "text-[11px] sm:text-xs",
+                theme === 'light' ? "text-gray-600" : "text-gray-300"
+              )}>{prospect.position}</span>
             </div>
           </div>
-        </div>
-      ),
-    },
-    {
-      key: 'club',
-      header: 'Club',
-      accessor: (prospect: Prospect, index: number, theme?: 'dark' | 'light') => (
-        <div className="text-center">
-          <div className={cn(
-            "w-5 h-5 rounded-full flex items-center justify-center mx-auto",
-            theme === 'light' ? "bg-gray-200" : "bg-gray-600"
-          )}>
-            <span className="text-[6px] text-white font-semibold">CL</span>
-          </div>
-          <div className={cn(
-            "text-[8px] mt-0.5 truncate",
-            theme === 'light' ? "text-gray-600" : "text-gray-300"
-          )}>{prospect.status || 'Sin club'}</div>
         </div>
       ),
     },
@@ -329,11 +333,11 @@ export const DashboardMobile: React.FC = () => {
         return (
           <div className="text-right">
             <div className={cn(
-              "font-semibold text-xs",
+              "font-bold text-base sm:text-lg",
               overall === 0 
                 ? (theme === 'light' ? 'text-gray-500' : 'text-gray-400')
                 : overall >= 90 
-                  ? 'text-green-400' 
+                  ? 'text-green-500' 
                   : overall >= 70 
                     ? 'text-yellow-400' 
                     : overall >= 60 
@@ -439,6 +443,7 @@ export const DashboardMobile: React.FC = () => {
               itemsPerPage: pagination.limit
             }}
             onPageChange={setPage}
+            onRequireAuth={() => setShowLoginModal(true)}
           />
         </div>
       </motion.div>

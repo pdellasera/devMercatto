@@ -20,16 +20,19 @@ export const MobileLayout: React.FC = () => {
 
   return (
     <div className={cn(
-      "min-h-screen flex flex-col",
+      "min-h-screen flex flex-col overflow-x-hidden",
       resolvedTheme === 'light' ? "bg-[#f5f5f5]" : "bg-[#141414]"
     )}>
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-50">
+      {/* Fixed Header */}
+      <div className="fixed top-0 inset-x-0 z-50">
         <MobileHeader 
           onMenuToggle={handleMenuToggle}
           sidebarOpen={sidebarOpen}
         />
       </div>
+
+      {/* Spacer para compensar la altura del header */}
+      <div className="h-16" />
 
       {/* Mobile Sidebar */}
       <MobileSidebar 

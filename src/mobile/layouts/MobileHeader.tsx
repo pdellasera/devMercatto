@@ -72,7 +72,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   ];
 
   return (
-    <header className="relative h-16 bg-white/95 backdrop-blur-xl shadow-lg overflow-hidden border-b border-white/10">
+    <header className="relative h-16 bg-white/95 backdrop-blur-xl shadow-lg overflow-hidden border-b border-white/10 ">
       {/* Diagonal split background - MANTENER DISEÑO ORIGINAL */}
       <div className="absolute inset-0">
         <div className="absolute left-0 top-0 w-3/4 h-full bg-white/95 backdrop-blur-xl"></div>
@@ -80,13 +80,13 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
       </div>
 
       <div className="relative z-10 max-w-10xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 min-w-0">
           {/* Left side - Menu Button + Logo (White background) */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 min-w-0">
             {/* Menu Toggle Button */}
             <button
               onClick={onMenuToggle}
-              className="p-2 rounded-md text-blue-900 hover:text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+              className="p-2 rounded-md text-blue-900 hover:text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 flex-shrink-0"
               title={sidebarOpen ? 'Cerrar menú' : 'Abrir menú'}
               aria-label={sidebarOpen ? 'Cerrar menú' : 'Abrir menú'}
             >
@@ -98,13 +98,13 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
             </button>
 
             {/* Logo con icon.png */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 min-w-0">
               <img
                 src={iconImage}
                 alt="Mercatto"
-                className="h-8 w-8 object-contain"
+                className="h-8 w-8 object-contain flex-shrink-0"
               />
-              <span className="font-bold text-lg text-blue-900">MERCATTO</span>
+              <span className="font-bold text-lg text-blue-900 truncate">MERCATTO</span>
             </div>
           </div>
 
