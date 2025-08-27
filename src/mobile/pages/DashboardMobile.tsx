@@ -256,23 +256,11 @@ export const DashboardMobile: React.FC = () => {
     },
   });
 
-  // Table columns configuration - Adaptada para mobile con responsive design
+  // Table columns configuration - Solo dos columnas: Jugador (con posición del array) y OVR
   const columns = [
     {
-      key: 'index',
-      header: '#',
-      accessor: (prospect: Prospect, index: number, theme?: 'dark' | 'light') => (
-        <div className="text-center">
-          <div className={cn(
-            "font-semibold text-sm sm:text-base",
-            resolvedTheme === 'light' ? "text-gray-600" : "text-gray-400"
-          )}>{index + 1}</div>
-        </div>
-      ),
-    },
-    {
-      key: 'nombre',
-      header: 'Jugadores',
+      key: 'jugador',
+      header: 'Jugador',
       accessor: (prospect: Prospect, index: number, theme?: 'dark' | 'light') => (
         <div className="flex items-center gap-2 min-w-0">
           {/* Avatar */}
@@ -281,9 +269,9 @@ export const DashboardMobile: React.FC = () => {
               src={prospect.imgData}
               alt={`${prospect.name} - ${prospect.position}`}
               fallback={prospect.name}
-              size="sm"
-              shape="circle"
-              className="shadow-lg w-7 h-7 sm:w-9 sm:h-9"
+              size="xl"
+              shape="square"
+              className="shadow-lg"
             />
             {/* Indicador de estado premium */}
             {prospect.fullaccess && (
@@ -295,14 +283,23 @@ export const DashboardMobile: React.FC = () => {
 
           {/* Información del jugador */}
           <div className="min-w-0 flex flex-col items-start justify-start">
-            {/* Primera línea: Bandera + Nombre (izquierda) y Edad (derecha) */}
-            <div className="flex items-center justify-between w-ld min-w-0">
+            {/* Primera línea: Posición del array + Bandera + Nombre (izquierda) y Edad (derecha) */}
+            <div className="flex items-center justify-between w-full min-w-0">
               <div className="flex items-center gap-1 min-w-0">
+                {/* Posición del array */}
+                <span className={cn(
+                  "text-xs font-bold px-1.5 py-0.5 rounded bg-gray-200 text-gray-700 flex-shrink-0",
+                  resolvedTheme === 'light' ? "bg-gray-200 text-gray-700" : "bg-gray-700 text-gray-300"
+                )}>
+                  #{index + 1}
+                </span>
+                {/* Bandera */}
                 <img
                   src="/flag_co.png"
                   alt="Bandera"
                   className="w-4 h-3 rounded-[2px] object-cover flex-shrink-0"
                 />
+                {/* Nombre */}
                 <h3 className={cn(
                   "font-bold leading-tight whitespace-normal break-words text-[14px] sm:text-[14px]",
                   resolvedTheme === 'light' ? "text-blue-700" : "text-blue-300"
@@ -310,17 +307,47 @@ export const DashboardMobile: React.FC = () => {
               </div>
               <span className={cn(
                 "ml-2 flex-shrink-0 text-[10px] sm:text-[13px]",
-                theme === 'light' ? "text-gray-600" : "text-gray-300"
+                resolvedTheme === 'light' ? "text-gray-600" : "text-gray-300"
               )}>{prospect.age} años</span>
             </div>
 
-            {/* Segunda línea: posición • CO (badge con bandera emoji ya reemplazado arriba) */}
-            <div className="flex items-center gap-1">
-              <span className={cn(
-                "text-[11px] sm:text-xs",
-                theme === 'light' ? "text-gray-600" : "text-gray-300"
-              )}>{prospect.position}</span>
-            </div>
+                         {/* Segunda línea: posición y club */}
+             <div className="flex items-center gap-1">
+               <span className={cn(
+                 "text-[11px] sm:text-xs",
+                 resolvedTheme === 'light' ? "text-gray-600" : "text-gray-300"
+               )}>{prospect.position}</span>
+               <span className={cn(
+                 "text-[10px]",
+                 resolvedTheme === 'light' ? "text-gray-400" : "text-gray-500"
+               )}>•</span>
+               {(prospect as any).club ? (
+                 <div className={cn(
+                   "flex items-center gap-1 px-1.5 py-0.5 rounded-full border",
+                   resolvedTheme === 'light'
+                     ? "bg-green-100 text-green-700 border-green-200"
+                     : "bg-green-900/20 text-green-300 border-green-700"
+                 )}>
+                   <img
+                     src="/flag_co.png"
+                     alt="Bandera del club"
+                     className="w-3 h-2 rounded-[1px] object-cover flex-shrink-0"
+                   />
+                   <span className="text-[10px] font-semibold">
+                     {(prospect as any).club}
+                   </span>
+                 </div>
+               ) : (
+                 <span className={cn(
+                   "text-[10px] font-semibold px-1.5 py-0.5 rounded-full border",
+                   resolvedTheme === 'light'
+                     ? "bg-orange-100 text-orange-700 border-orange-200"
+                     : "bg-orange-900/20 text-orange-300 border-orange-700"
+                 )}>
+                   Agente Libre
+                 </span>
+               )}
+             </div>
           </div>
         </div>
       ),
@@ -335,7 +362,7 @@ export const DashboardMobile: React.FC = () => {
             <div className={cn(
               "font-bold text-base sm:text-lg",
               overall === 0 
-                ? (theme === 'light' ? 'text-gray-500' : 'text-gray-400')
+                ? (resolvedTheme === 'light' ? 'text-gray-500' : 'text-gray-400')
                 : overall >= 90 
                   ? 'text-green-500' 
                   : overall >= 70 
@@ -353,12 +380,12 @@ export const DashboardMobile: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="w-full h-full flex flex-col">
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="w-full py-1 pb-16 sm:pb-20 flex flex-col flex-1"
+        className="w-full h-full flex flex-col"
       >
         {/* Authentication Toast */}
         {!isAuthenticated && showAuthToast && (
@@ -367,10 +394,10 @@ export const DashboardMobile: React.FC = () => {
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="mb-4 flex-shrink-0"
+            className="mb-4 flex-shrink-0 px-4 mt-2 py-2"
           >
             <div className={cn(
-              "relative",
+              "relative p-2",
               resolvedTheme === 'light' ? "glass-card-mobile-light" : "glass-card-mobile"
             )}>
               <div className="flex items-center gap-3">
@@ -415,8 +442,8 @@ export const DashboardMobile: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Table Section - Con flex-1 para ocupar el espacio disponible */}
-        <div className="flex-1 overflow-hidden">
+        {/* Table Section - Ocupa todo el espacio disponible */}
+        <div className="flex-1 w-full h-full overflow-hidden">
           <TableMobile
             data={prospects || []}
             columns={columns}

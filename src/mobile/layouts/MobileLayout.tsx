@@ -40,19 +40,17 @@ export const MobileLayout: React.FC = () => {
         onClose={handleSidebarClose}
       />
 
-      <div className="flex flex-1">
-        {/* Main Content */}
-        <main className="flex-1">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="p-4 sm:p-6 lg:p-8"
-          >
-            <Outlet />
-          </motion.div>
-        </main>
-      </div>
+      {/* Main Content - Ocupa toda la pantalla */}
+      <main className="flex-1 w-full h-full">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="w-full h-full"
+        >
+          <Outlet />
+        </motion.div>
+      </main>
     </div>
   );
 };

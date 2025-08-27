@@ -103,10 +103,10 @@ export function TableMobile<T>({
     return () => window.removeEventListener('resize', updateScreenSize);
   }, []);
 
-  // Columnas a mostrar: index, nombre (Jugador) y over/ovrGeneral. Usamos 'club' solo como detalle dentro de Jugador
+  // Columnas a mostrar: index, jugador (Jugador) y over/ovrGeneral. Usamos 'club' solo como detalle dentro de Jugador
   const composedColumns = useMemo(() => {
     const indexCol = columns.find(c => c.key === 'index');
-    const nombreCol = columns.find(c => c.key === 'nombre');
+    const nombreCol = columns.find(c => c.key === 'jugador' || c.key === 'nombre'); // Buscar tanto 'jugador' como 'nombre' para compatibilidad
     const overCol = columns.find(c => c.key === 'ovrGeneral' || c.key === 'over');
     const clubCol = columns.find(c => c.key === 'club');
     return { indexCol, nombreCol, overCol, clubCol };
@@ -296,11 +296,11 @@ export function TableMobile<T>({
   // Clases responsive dinámicas
   const getResponsiveClasses = {
     // Main container
-    mainContainerWidth: screenSize === 'xs' ? 'w-[95vw]' : screenSize === 'sm' ? 'w-[90vw]' : 'w-[95vw]',
+    mainContainerWidth: screenSize === 'xs' ? 'w-full' : screenSize === 'sm' ? 'w-full' : 'w-full',
     
     // Header
-    headerPadding: screenSize === 'xs' ? 'p-2' : screenSize === 'sm' ? 'p-3' : 'p-3 sm:p-4',
-    headerMargin: screenSize === 'xs' ? 'mb-2' : screenSize === 'sm' ? 'mb-3' : 'mb-3 sm:mb-4',
+    headerPadding: screenSize === 'xs' ? 'p-1' : screenSize === 'sm' ? 'p-2' : 'p-2 sm:p-3',
+    headerMargin: screenSize === 'xs' ? 'mb-1' : screenSize === 'sm' ? 'mb-2' : 'mb-2 sm:mb-3',
     titleSize: screenSize === 'xs' ? 'text-base' : screenSize === 'sm' ? 'text-lg' : 'text-lg',
     
     // Search
@@ -327,7 +327,7 @@ export function TableMobile<T>({
 
     // Modal (restaurado)
     modalMaxHeight: screenSize === 'xs' ? 'max-h-[70vh]' : screenSize === 'sm' ? 'max-h-[65vh]' : 'max-h-[60vh]',
-    modalContentHeight: screenSize === 'xs' ? 'h-[calc(70vh-140px)]' : screenSize === 'sm' ? 'h-[calc(65vh-160px)]' : 'h-[calc(60vh-180px)]',
+    modalContentHeight: screenSize === 'xs' ? 'h-[calc(85vh-200px)]' : screenSize === 'sm' ? 'h-[calc(85vh-220px)]' : 'h-[calc(85vh-240px)]',
     modalPadding: screenSize === 'xs' ? 'p-4' : screenSize === 'sm' ? 'p-5' : 'p-6',
     modalPanelWidth: screenSize === 'xs' ? 'w-2/5' : screenSize === 'sm' ? 'w-1/3' : 'w-1/3',
     modalTitleSize: screenSize === 'xs' ? 'text-base' : screenSize === 'sm' ? 'text-lg' : 'text-lg',
@@ -339,11 +339,11 @@ export function TableMobile<T>({
     <>
       <div className={cn(
         'flex flex-col h-full w-full',
-        theme === 'light' ? '' : 'glass-card-mobile',
+        // theme === 'light' ? '' : 'glass-card-mobile',
         className
       )}>
         {/* Header con título, filtro y búsqueda */}
-        <div className="w-full px-3 sm:px-4 lg:px-6">
+        <div className="w-full px-2 sm:px-3 lg:px-4">
           <div className={cn('relative group', getResponsiveClasses.headerPadding, getResponsiveClasses.headerMargin)}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-3">
@@ -393,36 +393,50 @@ export function TableMobile<T>({
             {/* Búsqueda */}
             {searchable && (
               <div className="relative">
-                <Search className={cn(
-                  'absolute left-3 top-1/2 transform -translate-y-1/2',
-                  theme === 'light' ? 'text-gray-500' : 'text-white/50',
-                  screenSize === 'xs' ? 'w-3.5 h-3.5' : 'w-4 h-4'
-                )} />
-                <input
-                  type="text"
-                  placeholder={searchPlaceholder}
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className={cn(
-                    'w-full pl-10 pr-10 backdrop-blur-xl rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200',
-                    theme === 'light' 
-                      ? 'bg-gray-100/80 border border-gray-300/50 text-gray-800 placeholder-gray-500' 
-                      : 'bg-white/5 border border-white/10 text-white placeholder-white/50',
-                    getResponsiveClasses.searchPadding,
-                    getResponsiveClasses.searchTextSize
-                  )}
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => handleSearch('')}
+                <div className={cn(
+                  'relative rounded-md shadow-lg backdrop-blur-xl border transition-all duration-200 h-14',
+                  theme === 'light' 
+                    ? 'glass-card-mobile-light' 
+                    : 'glass-card-mobile',
+                  'hover:shadow-xl',
+                  theme === 'light' 
+                    ? 'hover:shadow-gray-300/40' 
+                    : 'hover:shadow-black/30'
+                )}>
+                  <Search className={cn(
+                    'absolute left-3 top-1/2 transform -translate-y-1/2',
+                    theme === 'light' ? 'text-gray-500' : 'text-white/50',
+                    screenSize === 'xs' ? 'w-3.5 h-3.5' : 'w-4 h-4'
+                  )} />
+                  <input
+                    type="text"
+                    placeholder={searchPlaceholder}
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
                     className={cn(
-                      'absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors',
-                      theme === 'light' ? 'text-gray-500 hover:text-gray-700' : 'text-white/50 hover:text-white'
+                      'w-full h-full pl-10 pr-10 bg-transparent border-0 focus:outline-none focus:ring-0 transition-all duration-200',
+                      theme === 'light' 
+                        ? 'text-gray-800 placeholder-gray-500' 
+                        : 'text-white placeholder-white/50',
+                      getResponsiveClasses.searchPadding,
+                      getResponsiveClasses.searchTextSize,
+                      'rounded-md'
                     )}
-                  >
-                    <X className={cn(screenSize === 'xs' ? 'w-3.5 h-3.5' : 'w-4 h-4')} />
-                  </button>
-                )}
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => handleSearch('')}
+                      className={cn(
+                        'absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors p-1 rounded-full',
+                        theme === 'light' 
+                          ? 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' 
+                          : 'text-white/50 hover:text-white hover:bg-white/10'
+                      )}
+                    >
+                      <X className={cn(screenSize === 'xs' ? 'w-3.5 h-3.5' : 'w-4 h-4')} />
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -552,12 +566,17 @@ export function TableMobile<T>({
               <div className="h-full overflow-x-hidden">
               <div className="overflow-x-hidden">
                 {/* Table Content */}
-                <div className="w-full">
+                <div className={cn(
+                  'w-full rounded-md',
+                  theme === 'light' 
+                    ? 'glass-card-mobile-light' 
+                    : 'glass-card-mobile'
+                )}>
                   <div className={cn(
-                    'w-full bg-transparent border rounded-xl sm:rounded-2xl overflow-hidden backdrop-blur-xl shadow-xl sm:shadow-2xl glass-card-mobile-light',
+                    'w-full bg-transparent border rounded-xl sm:rounded-2xl overflow-hidden',
                     theme === 'light' 
-                      ? 'border-gray-300/50 shadow-gray-200/50' 
-                      : 'border-white/10 shadow-black/20'
+                      ? 'border-gray-300/50' 
+                      : 'border-white/10'
                   )}>
                     {/* Header - forzado a 3 columnas: #, Jugador, Over */}
                     <div className={cn(
@@ -574,7 +593,7 @@ export function TableMobile<T>({
                           getResponsiveClasses.indexWidth,
                           'flex-shrink-0'
                         )}>
-                          <span>#</span>
+                          <span>{composedColumns.indexCol.header}</span>
                         </div>
                       )}
                       {composedColumns.nombreCol && (
@@ -584,7 +603,7 @@ export function TableMobile<T>({
                           theme === 'light' ? 'text-gray-700' : 'text-gray-300',
                           'flex-1 min-w-0'
                         )}>
-                          <span className="truncate">Jugador</span>
+                          <span className="truncate">{composedColumns.nombreCol.header}</span>
                         </div>
                       )}
                       {composedColumns.overCol && (
@@ -595,7 +614,7 @@ export function TableMobile<T>({
                           getResponsiveClasses.overWidth,
                           'flex-shrink-0'
                         )}>
-                          <span>Over</span>
+                          <span>{composedColumns.overCol.header}</span>
                         </div>
                       )}
                     </div>
@@ -610,10 +629,9 @@ export function TableMobile<T>({
                           transition={{ delay: index * 0.05 }}
                           className={cn(
                             'transition-all duration-200 group',
-                            'border-b',
                             theme === 'light' 
-                              ? 'border-gray-200/50 hover:bg-gray-100/50' 
-                              : 'border-white/5 hover:bg-white/2',
+                              ? 'border-b border-gray-200/50 hover:bg-gray-100/50' 
+                              : 'border-b border-white/5 hover:bg-white/2',
                             onRowClick && 'cursor-pointer',
                             'flex items-center',
                             getResponsiveClasses.rowPadding,
@@ -705,7 +723,9 @@ export function TableMobile<T>({
             : "bg-background-secondary border-t border-white/10"
         )}>
           <div className={cn("w-full", getResponsiveClasses.paginatorPadding)}>
-                          <div className={theme === 'light' ? "glass-card-mobile-compact-light" : "glass-card-mobile-compact"}>
+            <div className={cn(
+              theme === 'light' ? "glass-card-mobile-compact-light" : "glass-card-mobile-compact"
+            )}>
               {pagination.totalPages <= 1 ? (
                 // Una sola página
                 <div className="flex items-center justify-center">
@@ -758,7 +778,7 @@ export function TableMobile<T>({
                         {pageNum}
                       </button>
                     ))}
-              </div>
+                  </div>
 
                   <button
                     onClick={() => onPageChange?.(pagination.page + 1)}
@@ -767,20 +787,20 @@ export function TableMobile<T>({
                       "rounded-lg border transition-all duration-200 touch-manipulation",
                       getResponsiveClasses.navButtonSize,
                       getResponsiveClasses.navIconSize,
-                                          pagination.page >= pagination.totalPages
-                      ? theme === 'light' 
-                        ? "border-gray-300/50 text-gray-400 cursor-not-allowed"
-                        : "border-white/10 text-white/30 cursor-not-allowed"
-                      : theme === 'light'
-                        ? "border-gray-400/50 text-gray-600 hover:bg-gray-200/50 hover:text-gray-800 hover:border-gray-500/50"
-                        : "border-white/20 text-white/80 hover:bg-white/10 hover:text-white hover:border-white/30"
+                      pagination.page >= pagination.totalPages
+                        ? theme === 'light' 
+                          ? "border-gray-300/50 text-gray-400 cursor-not-allowed"
+                          : "border-white/10 text-white/30 cursor-not-allowed"
+                        : theme === 'light'
+                          ? "border-gray-400/50 text-gray-600 hover:bg-gray-200/50 hover:text-gray-800 hover:border-gray-500/50"
+                          : "border-white/20 text-white/80 hover:bg-white/10 hover:text-white hover:border-white/30"
                     )}
                   >
                     <ChevronRight className={getResponsiveClasses.navIconSize} />
                   </button>
-          </div>
-        )}
-      </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -1071,7 +1091,7 @@ export function TableMobile<T>({
         )}
       </AnimatePresence>
 
-      {/* Modal Detalle de Jugador */}
+      {/* Modal Detalle de Jugador - Swiper */}
       <AnimatePresence>
         {showPlayerModal && selectedProspect && (
           <>
@@ -1085,124 +1105,244 @@ export function TableMobile<T>({
             />
 
             <motion.div
-              initial={{ y: '100%', scale: 0.95, opacity: 0 }}
-              animate={{ y: 0, scale: 1, opacity: 1 }}
-              exit={{ y: '100%', scale: 0.95, opacity: 0 }}
-              transition={{ type: 'spring', damping: 30, stiffness: 400, mass: 0.8 }}
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ 
+                type: 'spring', 
+                damping: 25, 
+                stiffness: 300, 
+                mass: 1,
+                duration: 0.4
+              }}
               drag="y"
               dragConstraints={{ top: 0, bottom: 0 }}
               onDragEnd={(_, info) => {
-                if (info.offset.y > 100 || info.velocity.y > 800) setShowPlayerModal(false);
+                if (info.offset.y > 80 || info.velocity.y > 600) setShowPlayerModal(false);
               }}
               className={cn(
                 'fixed bottom-0 left-0 right-0 z-50 backdrop-blur-2xl border rounded-t-[2rem] shadow-2xl overflow-hidden',
-                theme === 'light' 
-                  ? 'bg-white/95 border-gray-200' 
-                  : 'bg-gradient-to-b from-gray-900/95 via-gray-900/90 to-gray-900/85 border-white/10',
-                getResponsiveClasses.modalMaxHeight
+                theme === 'light' ? 'glass-card-mobile-light' : 'glass-card-mobile',
+                'h-[85vh]'
               )}
             >
               {/* Asa superior para gesto */}
               <div className="flex items-center justify-center pt-3">
                 <div className={cn('w-12 h-1.5 rounded-full', theme === 'light' ? 'bg-gray-300/90' : 'bg-white/20')} />
               </div>
-              {/* Header */}
-              <div className={cn(
-                'flex items-center justify-between border-b relative',
-                theme === 'light' ? 'border-gray-200 bg-white/70' : 'border-white/10 bg-white/5',
-                getResponsiveClasses.modalPadding
-              )}>
-                <div className="flex items-center space-x-3 min-w-0">
+              {/* Información del jugador - Sin cards */}
+              <div className="mt-4 px-4">
+                {/* Avatar e información principal */}
+                <div className="flex items-center space-x-4 mb-6">
+                  {/* Avatar */}
                   <div className={cn(
-                    'rounded-xl border flex items-center justify-center overflow-hidden flex-shrink-0 ring-2',
-                    theme === 'light' ? 'border-gray-200 ring-blue-100' : 'border-white/10 ring-white/10',
-                    screenSize === 'xs' ? 'w-12 h-12' : 'w-14 h-14'
+                    'rounded-xl border-2 flex items-center justify-center overflow-hidden flex-shrink-0 ring-2 shadow-lg',
+                    theme === 'light' ? 'border-blue-200 ring-blue-100' : 'border-blue-400/30 ring-blue-400/20',
+                    screenSize === 'xs' ? 'w-16 h-16' : 'w-20 h-20'
                   )}>
-                    <img src={(selectedProspect as any).imgData} alt={(selectedProspect as any).name} className="w-full h-full object-cover" />
+                    <img 
+                      src={(selectedProspect as any).imgData} 
+                      alt={(selectedProspect as any).name} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                    <div className={cn(
+                      'w-full h-full flex items-center justify-center hidden',
+                      theme === 'light' ? 'bg-gray-200 text-gray-400' : 'bg-gray-700 text-gray-500'
+                    )}>
+                      <span className="text-2xl">👤</span>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center justify-between min-w-0">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <img src="/flag_co.png" alt="Bandera" className="w-4 h-3 rounded-[2px] object-cover flex-shrink-0" />
-                        <h3 className={cn('font-bold leading-tight whitespace-normal break-words', screenSize === 'xs' ? 'text-base' : 'text-lg', theme === 'light' ? 'text-gray-900' : 'text-white')} style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                          {(selectedProspect as any).name}
-                        </h3>
-                      </div>
-                      <span className={cn('ml-2 flex-shrink-0', screenSize === 'xs' ? 'text-xs' : 'text-sm', theme === 'light' ? 'text-gray-600' : 'text-white/70')}>
+                  
+                  {/* Información */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <img src="/flag_co.png" alt="Bandera" className="w-5 h-4 rounded-sm object-cover flex-shrink-0" />
+                      <h3 className={cn(
+                        'font-bold leading-tight truncate flex-1',
+                        screenSize === 'xs' ? 'text-lg' : 'text-xl',
+                        theme === 'light' ? 'text-gray-900' : 'text-white'
+                      )}>
+                        {(selectedProspect as any).name}
+                      </h3>
+                      <span className={cn(
+                        'flex-shrink-0 px-2 py-1 rounded-full text-xs font-semibold',
+                        theme === 'light' ? 'bg-blue-100 text-blue-700' : 'bg-blue-900/50 text-blue-300'
+                      )}>
                         {(selectedProspect as any).age} años
                       </span>
                     </div>
-                    {/* Segunda línea: posición, estado (chip) y club */}
-                    <div className="flex items-center justify-between min-w-0">
-                      <div className={cn('flex items-center gap-2 min-w-0', screenSize === 'xs' ? 'text-xs' : 'text-sm', theme === 'light' ? 'text-gray-700' : 'text-white/80')}>
-                        <span className="truncate">{(selectedProspect as any).position}</span>
-                        <span>•</span>
-                        <span className="truncate max-w-[44vw] sm:max-w-[52vw]">{(selectedProspect as any).club || 'Club no disponible'}</span>
-                      </div>
+                    
+                    <div className="flex items-center gap-2 mb-2">
                       <span className={cn(
-                        'px-2 py-0.5 rounded-full text-[10px] font-semibold ml-2 flex-shrink-0',
-                        theme === 'light' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-white/10 text-white border border-white/10'
+                        'font-semibold',
+                        screenSize === 'xs' ? 'text-sm' : 'text-base',
+                        theme === 'light' ? 'text-gray-700' : 'text-white/90'
                       )}>
-                        {(selectedProspect as any).status || '—'}
+                        {(selectedProspect as any).position}
+                      </span>
+                      <span className={cn(
+                        'text-gray-400',
+                        theme === 'light' ? 'text-gray-400' : 'text-white/40'
+                      )}>•</span>
+                      <span className={cn(
+                        'truncate font-medium',
+                        screenSize === 'xs' ? 'text-sm' : 'text-base',
+                        theme === 'light' ? 'text-gray-600' : 'text-white/80'
+                      )}>
+                        {(selectedProspect as any).club || 'Agente Libre'}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        'text-xs font-medium',
+                        theme === 'light' ? 'text-gray-600' : 'text-white/70'
+                      )}>
+                        OVR:
+                      </span>
+                      <span className={cn(
+                        'font-bold text-lg',
+                        theme === 'light' ? 'text-gray-900' : 'text-white'
+                      )}>
+                        {(selectedProspect as any).ovrGeneral || '—'}
                       </span>
                     </div>
                   </div>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowPlayerModal(false)}
-                  className={cn('absolute right-3 top-3 rounded-xl flex items-center justify-center', screenSize === 'xs' ? 'w-9 h-9' : 'w-10 h-10', theme === 'light' ? 'text-gray-600 hover:bg-gray-100' : 'text-white/80 hover:bg-white/10')}
-                >
-                  <X className={cn(screenSize === 'xs' ? 'w-4 h-4' : 'w-5 h-5')} />
-                </motion.button>
+                
+                {/* Información física */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className={cn(
+                      'text-xs font-semibold mb-1',
+                      theme === 'light' ? 'text-gray-600' : 'text-white/70'
+                    )}>
+                      ALTURA
+                    </div>
+                    <div className={cn(
+                      'font-bold text-base',
+                      theme === 'light' ? 'text-gray-900' : 'text-white'
+                    )}>
+                      {(selectedProspect as any).talla ? `${(selectedProspect as any).talla} cm` : '—'}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className={cn(
+                      'text-xs font-semibold mb-1',
+                      theme === 'light' ? 'text-gray-600' : 'text-white/70'
+                    )}>
+                      PESO
+                    </div>
+                    <div className={cn(
+                      'font-bold text-base',
+                      theme === 'light' ? 'text-gray-900' : 'text-white'
+                    )}>
+                      {(selectedProspect as any).peso ? `${(selectedProspect as any).peso} kg` : '—'}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className={cn(
+                      'text-xs font-semibold mb-1',
+                      theme === 'light' ? 'text-gray-600' : 'text-white/70'
+                    )}>
+                      PIE
+                    </div>
+                    <div className={cn(
+                      'font-bold text-base',
+                      theme === 'light' ? 'text-gray-900' : 'text-white'
+                    )}>
+                      {(selectedProspect as any).pieDominante || '—'}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Contenido */}
               <div className={cn('space-y-4 overflow-y-auto', getResponsiveClasses.modalContentHeight, getResponsiveClasses.modalPadding)}>
-                {/* Overalls */}
-                <div>
-                  <h4 className={cn('font-semibold mb-2', theme === 'light' ? 'text-gray-900' : 'text-white')}>Overalls</h4>
-                  <div className="grid grid-cols-4 gap-2">
+                {/* Overalls estilo FIFA */}
+                <div className={cn(
+                  'relative p-4 rounded-2xl',
+                  theme === 'light' ? 'glass-card-mobile-light' : 'glass-card-mobile'
+                )}>
+                  <h4 className={cn('font-black mb-4 flex items-center gap-2 text-lg', theme === 'light' ? 'text-gray-900' : 'text-white')}>
+                    <div className={cn('w-3 h-3 rounded-full', theme === 'light' ? 'bg-gradient-to-r from-blue-500 to-blue-600' : 'bg-gradient-to-r from-blue-400 to-blue-500')}></div>
+                    OVERALL RATING
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
                     {['ovrGeneral','ovrFisico','ovrTecnico','overCompetencia'].map((k) => {
                       const val = (selectedProspect as any)[k] ?? 0;
-                      const color = val === 0 ? (theme === 'light' ? 'text-gray-500' : 'text-gray-400') : val >= 90 ? 'text-green-500' : val >= 70 ? 'text-yellow-400' : val >= 60 ? 'text-orange-400' : 'text-red-400';
-                      const ring = val === 0 ? (theme === 'light' ? 'ring-gray-200' : 'ring-white/10') : val >= 90 ? 'ring-green-500/30' : val >= 70 ? 'ring-yellow-400/30' : val >= 60 ? 'ring-orange-400/30' : 'ring-red-400/30';
-                      const labelMap: Record<string,string> = { ovrGeneral: 'OVR', ovrFisico: 'Físico', ovrTecnico: 'Técnico', overCompetencia: 'Compet.' };
+                      const getColor = (value: number) => {
+                        if (value >= 90) return 'from-green-500 to-emerald-500';
+                        if (value >= 80) return 'from-blue-500 to-blue-600';
+                        if (value >= 70) return 'from-yellow-500 to-orange-500';
+                        if (value >= 60) return 'from-orange-500 to-red-500';
+                        return 'from-gray-400 to-gray-500';
+                      };
+                      const labelMap: Record<string,string> = { ovrGeneral: 'OVR', ovrFisico: 'FÍSICO', ovrTecnico: 'TÉCNICO', overCompetencia: 'COMPETENCIA' };
                       return (
-                        <div key={k} className={cn('rounded-xl border p-2 text-center ring-1', theme === 'light' ? 'border-gray-200' : 'border-white/10', ring)}>
-                          <div className={cn('text-[11px] mb-1', theme === 'light' ? 'text-gray-600' : 'text-white/70')}>{labelMap[k]}</div>
-                          <div className={cn('font-bold text-lg', color)}>{val || '-'}</div>
+                        <div key={k} className={cn(
+                          'p-3 rounded-xl text-center relative overflow-hidden transition-all duration-200'
+                         
+                        )}>
+                          <div className={cn('text-xs font-bold mb-1', theme === 'light' ? 'text-gray-700' : 'text-white/80')}>{labelMap[k]}</div>
+                          <div className={cn(
+                            'font-black text-3xl',
+                            val > 0 ? `text-transparent bg-clip-text bg-gradient-to-r ${getColor(val)}` : (theme === 'light' ? 'text-gray-400' : 'text-white/40')
+                          )}>
+                            {val || '—'}
+                          </div>
                         </div>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Métricas físicas con barras */}
-                <div>
-                  <h4 className={cn('font-semibold mb-2', theme === 'light' ? 'text-gray-900' : 'text-white')}>Métricas físicas</h4>
-                  <div className="grid grid-cols-2 gap-2">
+                {/* Métricas físicas estilo FIFA */}
+                <div className={cn(
+                  'relative p-4 rounded-2xl',
+                  theme === 'light' ? 'glass-card-mobile-light' : 'glass-card-mobile'
+                )}>
+                  <h4 className={cn('font-black mb-4 flex items-center gap-2 text-lg', theme === 'light' ? 'text-gray-900' : 'text-white')}>
+                    <div className={cn('w-3 h-3 rounded-full', theme === 'light' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-green-400 to-emerald-400')}></div>
+                    MÉTRICAS FÍSICAS
+                  </h4>
+                  <div className="grid grid-cols-1 gap-3">
                     {[
-                      ['Talla', 'talla', 220],
-                      ['Resistencia', 'resistencia', 100],
-                      ['Fuerza', 'fuerza', 100],
-                      ['Potencia', 'potencia', 100],
-                      ['Agilidad', 'agilidad', 100],
-                      ['Velocidad', 'velocidad', 100],
-                      ['Flexibilidad', 'flexibilidad', 100]
+                      ['RESISTENCIA', 'resistencia', 100],
+                      ['FUERZA', 'fuerza', 100],
+                      ['POTENCIA', 'potencia', 100],
+                      ['AGILIDAD', 'agilidad', 100],
+                      ['VELOCIDAD', 'velocidad', 100],
+                      ['FLEXIBILIDAD', 'flexibilidad', 100]
                     ].map(([label, key, max]) => {
                       const raw = (selectedProspect as any)[key as string];
                       const value = typeof raw === 'number' ? raw : 0;
                       const pct = Math.max(0, Math.min(100, Math.round((value / (max as number)) * 100)));
+                      const getColor = (percentage: number) => {
+                        if (percentage >= 90) return 'from-green-500 to-emerald-500';
+                        if (percentage >= 80) return 'from-blue-500 to-blue-600';
+                        if (percentage >= 70) return 'from-yellow-500 to-orange-500';
+                        if (percentage >= 50) return 'from-orange-500 to-red-500';
+                        return 'from-gray-400 to-gray-500';
+                      };
                       return (
-                        <div key={key as string} className={cn('rounded-xl border p-2', theme === 'light' ? 'border-gray-200' : 'border-white/10')}>
-                          <div className="flex items-center justify-between mb-1">
-                            <div className={cn('text-xs', theme === 'light' ? 'text-gray-600' : 'text-white/70')}>{label}</div>
-                            <div className={cn('text-xs font-semibold', theme === 'light' ? 'text-gray-900' : 'text-white')}>{value || '-'}</div>
+                        <div key={key as string} className={cn(
+                          'p-3 rounded-xl relative overflow-hidden transition-all duration-200'
+                        )}>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className={cn('text-sm font-black', theme === 'light' ? 'text-gray-700' : 'text-white/90')}>{label}</div>
+                            <div className={cn('text-sm font-black', theme === 'light' ? 'text-gray-900' : 'text-white')}>{value || '—'}</div>
                           </div>
-                          <div className={cn('w-full h-2 rounded-full overflow-hidden', theme === 'light' ? 'bg-gray-200/80' : 'bg-white/10')}>
-                            <div className={cn('h-full rounded-full transition-all', 'bg-gradient-to-r from-blue-500 to-blue-600')} style={{ width: `${pct}%` }} />
+                          <div className={cn('w-full h-4 rounded-full overflow-hidden', theme === 'light' ? 'bg-gray-200/50' : 'bg-white/10')}>
+                            <div 
+                              className={cn('h-full rounded-full transition-all duration-500 ease-out shadow-lg', `bg-gradient-to-r ${getColor(pct)}`)} 
+                              style={{ width: `${pct}%` }} 
+                            />
                           </div>
                         </div>
                       );
@@ -1210,40 +1350,81 @@ export function TableMobile<T>({
                   </div>
                 </div>
 
-                {/* Datos personales */}
-                <div>
-                  <h4 className={cn('font-semibold mb-2', theme === 'light' ? 'text-gray-900' : 'text-white')}>Datos personales</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className={cn('rounded-xl border p-2', theme === 'light' ? 'border-gray-200' : 'border-white/10')}>
-                      <div className={cn('text-xs', theme === 'light' ? 'text-gray-600' : 'text-white/70')}>Año de nacimiento</div>
-                      <div className={cn('font-semibold', theme === 'light' ? 'text-gray-900' : 'text-white')}>{(selectedProspect as any).yearOfbirth ?? '-'}</div>
+                {/* Datos personales estilo FIFA */}
+                <div className={cn(
+                  'relative p-4 rounded-2xl',
+                  theme === 'light' ? 'glass-card-mobile-light' : 'glass-card-mobile'
+                )}>
+                  <h4 className={cn('font-black mb-4 flex items-center gap-2 text-lg', theme === 'light' ? 'text-gray-900' : 'text-white')}>
+                    <div className={cn('w-3 h-3 rounded-full', theme === 'light' ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gradient-to-r from-purple-400 to-pink-400')}></div>
+                    DATOS PERSONALES
+                  </h4>
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className={cn(
+                      'p-3 rounded-xl relative overflow-hidden transition-all duration-200'
+                     
+                    )}>
+                      <div className={cn('text-xs font-bold mb-1', theme === 'light' ? 'text-gray-600' : 'text-white/70')}>AÑO DE NACIMIENTO</div>
+                      <div className={cn('font-black text-lg', theme === 'light' ? 'text-gray-900' : 'text-white')}>{(selectedProspect as any).yearOfbirth ?? '—'}</div>
                     </div>
-                    <div className={cn('rounded-xl border p-2', theme === 'light' ? 'border-gray-200' : 'border-white/10')}>
-                      <div className={cn('text-xs', theme === 'light' ? 'text-gray-600' : 'text-white/70')}>Fecha de nacimiento</div>
-                      <div className={cn('font-semibold', theme === 'light' ? 'text-gray-900' : 'text-white')}>{(selectedProspect as any).birthdayDate ?? '-'}</div>
+                    <div className={cn(
+                      'p-3 rounded-xl relative overflow-hidden transition-all duration-200'
+                     
+                    )}>
+                      <div className={cn('text-xs font-bold mb-1', theme === 'light' ? 'text-gray-600' : 'text-white/70')}>FECHA DE NACIMIENTO</div>
+                      <div className={cn('font-black text-lg', theme === 'light' ? 'text-gray-900' : 'text-white')}>{(selectedProspect as any).birthdayDate ?? '—'}</div>
                     </div>
-                    <div className={cn('rounded-xl border p-2 col-span-2', theme === 'light' ? 'border-gray-200' : 'border-white/10')}>
-                      <div className={cn('text-xs', theme === 'light' ? 'text-gray-600' : 'text-white/70')}>Estado</div>
-                      <div className={cn('font-semibold', theme === 'light' ? 'text-gray-900' : 'text-white')}>{(selectedProspect as any).status ?? '-'}</div>
+                    <div className={cn(
+                      'p-3 rounded-xl relative overflow-hidden transition-all duration-200'
+                 
+                    )}>
+                      <div className={cn('text-xs font-bold mb-1', theme === 'light' ? 'text-gray-600' : 'text-white/70')}>ESTADO ACTUAL</div>
+                      <div className={cn('font-black text-lg', theme === 'light' ? 'text-gray-900' : 'text-white')}>{(selectedProspect as any).status ?? '—'}</div>
                     </div>
                   </div>
                 </div>
 
-                {/* Videos */}
+                {/* Videos estilo FIFA */}
                 {!!(selectedProspect as any).videos && (
-                  <div>
-                    <h4 className={cn('font-semibold mb-2', theme === 'light' ? 'text-gray-900' : 'text-white')}>Videos</h4>
-                    <div className={cn('rounded-xl border p-3', theme === 'light' ? 'border-gray-200' : 'border-white/10')}>
-                      <div className={cn('text-xs mb-1', theme === 'light' ? 'text-gray-600' : 'text-white/70')}>Enlaces o datos de video</div>
-                      <div className={cn('font-mono text-xs break-words', theme === 'light' ? 'text-gray-800' : 'text-white/90')}>{(selectedProspect as any).videos}</div>
+                  
+                  <div className={cn(
+                    'relative p-4 rounded-2xl',
+                    theme === 'light' ? 'glass-card-mobile-light' : 'glass-card-mobile'
+                  )}>
+                    <h4 className={cn('font-black mb-4 flex items-center gap-2 text-lg', theme === 'light' ? 'text-gray-900' : 'text-white')}>
+                      <div className={cn('w-3 h-3 rounded-full', theme === 'light' ? 'bg-gradient-to-r from-orange-500 to-red-500' : 'bg-gradient-to-r from-orange-400 to-red-400')}></div>
+                      VIDEOS Y HIGHLIGHTS
+                    </h4>
+                    <div className={cn(
+                      'p-3 rounded-xl relative overflow-hidden transition-all duration-200',
+                      theme === 'light' ? 'glass-card-mobile-compact-light' : 'glass-card-mobile-compact'
+                    )}>
+                      <div className={cn('text-xs font-bold mb-2', theme === 'light' ? 'text-gray-600' : 'text-white/70')}>ENLACES DE VIDEO</div>
+                      <div className={cn('font-mono text-xs break-words leading-relaxed', theme === 'light' ? 'text-gray-800' : 'text-white/90')}>{(selectedProspect as any).videos}</div>
                     </div>
                   </div>
                 )}
 
-                {/* Barra de acciones */}
-                <div className={cn('flex items-center justify-end gap-2 pt-2 border-t', theme === 'light' ? 'border-gray-200' : 'border-white/10')}>
-                  <button className={cn('px-4 py-2 rounded-lg font-medium', theme === 'light' ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' : 'bg-white/10 text-white hover:bg-white/20')}>Ver más</button>
-                  <button
+                {/* Spacer para el footer sticky */}
+                <div className="h-20"></div>
+              </div>
+
+              {/* Barra de acciones - Footer Sticky */}
+              <div className={cn(
+                'absolute bottom-0 left-0 right-0 p-4 border-t',
+                theme === 'light' ? 'glass-card-mobile-light' : 'glass-card-mobile'
+              )}>
+                <div className="flex items-center justify-between gap-3">
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={cn('px-6 py-3 rounded-xl font-black transition-all duration-200', theme === 'light' ? 'glass-card-mobile-compact-light text-gray-800 hover:shadow-lg' : 'glass-card-mobile-compact text-white hover:shadow-lg')}
+                  >
+                    VER MÁS
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       if (!isAuthenticated) {
                         setShowPlayerModal(false);
@@ -1253,10 +1434,10 @@ export function TableMobile<T>({
                       // Acción real de contactar (TODO integrar flujo real)
                       console.log('Contactar atleta', (selectedProspect as any)?.sessionID);
                     }}
-                    className={cn('px-4 py-2 rounded-lg font-semibold text-white shadow', 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700')}
+                    className={cn('px-6 py-3 rounded-xl font-black text-white shadow-xl transition-all duration-200', 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:shadow-2xl')}
                   >
-                    Contactar
-                  </button>
+                    CONTACTAR
+                  </motion.button>
                 </div>
               </div>
             </motion.div>
