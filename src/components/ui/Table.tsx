@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Loader2, Search, Filter, UserPlus } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { FilterDropdown } from './FilterDropdown';
+import { useTheme } from '../../design-system/theme/ThemeProvider';
 
 export interface Column<T> {
   key: string;
@@ -85,6 +86,7 @@ const Table = <T extends Record<string, any>>({
 }: TableProps<T>) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = React.useState(false);
+  const { resolvedTheme } = useTheme();
 
   const handleSort = (columnKey: string) => {
     if (onSort) {
@@ -136,13 +138,15 @@ const Table = <T extends Record<string, any>>({
   );
 
   const cellClasses = cn(
-    'px-4 py-3 text-sm border-b border-white/5 text-white/90 transition-all duration-200',
+    'px-4 py-3 text-sm border-b border-white/5 transition-all duration-200',
+    resolvedTheme === 'light' ? 'text-gray-900' : 'text-white/90',
     compact && 'px-3 py-2 text-xs',
     'relative'
   );
 
   const headerCellClasses = cn(
-    'px-4 py-3 text-xs font-semibold text-white/85 uppercase tracking-wider',
+    'px-4 py-3 text-xs font-semibold uppercase tracking-wider',
+    resolvedTheme === 'light' ? 'text-gray-800' : 'text-white/85',
     'bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-xl',
     compact && 'px-3 py-2 text-xs',
     'relative'
@@ -174,10 +178,16 @@ const Table = <T extends Record<string, any>>({
             <div className="flex items-center space-x-3">
               <div className="w-2 h-8 bg-gradient-to-b from-blue-400 to-purple-500 rounded-full"></div>
               <div>
-                <h3 className="text-lg font-semibold text-white tracking-wide">
+                <h3 className={cn(
+                  "text-lg font-semibold tracking-wide",
+                  resolvedTheme === 'light' ? "text-gray-900" : "text-white"
+                )}>
                   Filtros de Búsqueda
                 </h3>
-                <p className="text-sm text-gray-400 mt-1">
+                <p className={cn(
+                  "text-sm mt-1",
+                  resolvedTheme === 'light' ? "text-gray-600" : "text-gray-400"
+                )}>
                   Encuentra el prospecto ideal para tu equipo
                 </p>
               </div>
@@ -188,11 +198,19 @@ const Table = <T extends Record<string, any>>({
               <div className="flex items-center space-x-3">
                 <button
                   onClick={onClearFilters}
-                  className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white rounded-lg text-xs transition-all duration-200"
+                  className={cn(
+                    "px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs transition-all duration-200",
+                    resolvedTheme === 'light' 
+                      ? "text-gray-700 hover:text-gray-900" 
+                      : "text-gray-300 hover:text-white"
+                  )}
                 >
                   Limpiar Filtros
                 </button>
-                <span className="text-xs text-gray-500">
+                <span className={cn(
+                  "text-xs",
+                  resolvedTheme === 'light' ? "text-gray-500" : "text-gray-500"
+                )}>
                   {filterStatus}
                 </span>
               </div>
@@ -205,13 +223,21 @@ const Table = <T extends Record<string, any>>({
             {searchable && (
               <div className="lg:col-span-2">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/50" />
+                  <Search className={cn(
+                    "absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4",
+                    resolvedTheme === 'light' ? "text-gray-400" : "text-white/50"
+                  )} />
                   <input
                     type="text"
                     placeholder={searchPlaceholder}
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200"
+                    className={cn(
+                      "w-full pl-10 pr-4 py-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200",
+                      resolvedTheme === 'light' 
+                        ? "text-gray-900 placeholder-gray-500" 
+                        : "text-white placeholder-white/50"
+                    )}
                   />
                 </div>
               </div>
@@ -222,7 +248,10 @@ const Table = <T extends Record<string, any>>({
                <div className="relative">
                  <button 
                    onClick={handleFilterToggle}
-                   className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-md text-sm transition-all duration-200 flex items-center space-x-2"
+                   className={cn(
+                     "px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md text-sm transition-all duration-200 flex items-center space-x-2",
+                     resolvedTheme === 'light' ? "text-gray-800" : "text-white"
+                   )}
                  >
                    <Filter className="w-4 h-4" />
                    <span>Filtros</span>
@@ -237,7 +266,10 @@ const Table = <T extends Record<string, any>>({
                  />
                </div>
                
-               <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg shadow-blue-500/25">
+               <button className={cn(
+                 "px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg shadow-blue-500/25",
+                 resolvedTheme === 'light' ? "text-white" : "text-white"
+               )}>
                  <UserPlus className="w-4 h-4" />
                  <span>Invitar a Visoria</span>
                </button>
@@ -287,7 +319,10 @@ const Table = <T extends Record<string, any>>({
                       onClick={() => column.sortable && handleSort(column.key)}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-white/90">{column.header}</span>
+                        <span className={cn(
+                          "font-semibold",
+                          resolvedTheme === 'light' ? "text-gray-800" : "text-white/90"
+                        )}>{column.header}</span>
                         {column.sortable && (
                           <div className="ml-2 flex flex-col">
                             {sortColumn === column.key ? (
@@ -297,7 +332,10 @@ const Table = <T extends Record<string, any>>({
                                 <ChevronDown className="w-3 h-3 text-blue-400" />
                               )
                             ) : (
-                              <div className="w-3 h-3 text-white/30">
+                              <div className={cn(
+                                "w-3 h-3",
+                                resolvedTheme === 'light' ? "text-gray-400" : "text-white/30"
+                              )}>
                                 <ChevronUp className="w-2 h-2" />
                                 <ChevronDown className="w-2 h-2" />
                               </div>
@@ -570,7 +608,10 @@ const Table = <T extends Record<string, any>>({
                           className="relative"
                         >
                           <div className="w-24 h-24 bg-gradient-to-br from-white/10 to-white/5 rounded-full flex items-center justify-center border border-white/10 shadow-2xl">
-                            <Search className="w-12 h-12 text-white/40" />
+                            <Search className={cn(
+                              "w-12 h-12",
+                              resolvedTheme === 'light' ? "text-gray-300" : "text-white/40"
+                            )} />
                           </div>
                           <motion.div
                             animate={{
@@ -592,7 +633,10 @@ const Table = <T extends Record<string, any>>({
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3, duration: 0.5 }}
-                            className="text-xl font-semibold text-white/80 tracking-wide"
+                            className={cn(
+                              "text-xl font-semibold tracking-wide",
+                              resolvedTheme === 'light' ? "text-gray-800" : "text-white/80"
+                            )}
                           >
                             {emptyMessage}
                           </motion.h3>
@@ -600,7 +644,10 @@ const Table = <T extends Record<string, any>>({
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.4, duration: 0.5 }}
-                            className="text-white/50 text-sm max-w-md"
+                            className={cn(
+                              "text-sm max-w-md",
+                              resolvedTheme === 'light' ? "text-gray-600" : "text-white/50"
+                            )}
                           >
                             {searchQuery
                               ? "No se encontraron resultados para tu búsqueda. Intenta con otros términos."
@@ -628,7 +675,10 @@ const Table = <T extends Record<string, any>>({
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
-                              className="px-6 py-2 bg-gradient-to-r from-white/10 to-white/5 border border-white/20 text-white/70 rounded-lg hover:from-white/20 hover:to-white/10 transition-all duration-200"
+                              className={cn(
+                                "px-6 py-2 bg-gradient-to-r from-white/10 to-white/5 border border-white/20 rounded-lg hover:from-white/20 hover:to-white/10 transition-all duration-200",
+                                resolvedTheme === 'light' ? "text-gray-700" : "text-white/70"
+                              )}
                             >
                               Ver todos
                             </motion.button>
@@ -640,7 +690,10 @@ const Table = <T extends Record<string, any>>({
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: 0.6, duration: 0.5 }}
-                          className="flex items-center space-x-2 text-xs text-white/30"
+                          className={cn(
+                            "flex items-center space-x-2 text-xs",
+                            resolvedTheme === 'light' ? "text-gray-400" : "text-white/30"
+                          )}
                         >
                           <div className="w-1 h-1 bg-white/30 rounded-full"></div>
                           <span>Sin resultados</span>
@@ -695,9 +748,9 @@ const Table = <T extends Record<string, any>>({
                             className={cn(
                               cellClasses,
                               column.align && `text-${column.align}`,
-                              column.priority === 'high' && 'font-semibold text-white',
-                              column.priority === 'medium' && 'text-white/90',
-                              column.priority === 'low' && 'text-white/70'
+                              column.priority === 'high' && (resolvedTheme === 'light' ? 'font-semibold text-gray-900' : 'font-semibold text-white'),
+                              column.priority === 'medium' && (resolvedTheme === 'light' ? 'text-gray-700' : 'text-white/90'),
+                              column.priority === 'low' && (resolvedTheme === 'light' ? 'text-gray-500' : 'text-white/70')
                             )}
                           >
                             <div className="relative">
@@ -724,26 +777,43 @@ const Table = <T extends Record<string, any>>({
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between px-6 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl"
         >
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-white/70">
-              Página <span className="font-semibold text-white">{currentPage}</span> de{' '}
-              <span className="font-semibold text-white">{totalPages}</span>
-            </span>
-            <span className="text-xs text-white/50">
-              {data.length} elementos por página
-            </span>
-          </div>
+                     <div className="flex items-center space-x-4">
+             <span className={cn(
+               "text-sm",
+               resolvedTheme === 'light' ? "text-gray-600" : "text-white/70"
+             )}>
+               Página <span className={cn(
+                 "font-semibold",
+                 resolvedTheme === 'light' ? "text-gray-900" : "text-white"
+               )}>{currentPage}</span> de{' '}
+               <span className={cn(
+                 "font-semibold",
+                 resolvedTheme === 'light' ? "text-gray-900" : "text-white"
+               )}>{totalPages}</span>
+             </span>
+             <span className={cn(
+               "text-xs",
+               resolvedTheme === 'light' ? "text-gray-500" : "text-white/50"
+             )}>
+               {data.length} elementos por página
+             </span>
+           </div>
 
           <div className="flex items-center space-x-2">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => onPageChange?.(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </motion.button>
+                         <motion.button
+               whileHover={{ scale: 1.05 }}
+               whileTap={{ scale: 0.95 }}
+               onClick={() => onPageChange?.(currentPage - 1)}
+               disabled={currentPage === 1}
+               className={cn(
+                 "p-2 hover:bg-white/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200",
+                 resolvedTheme === 'light' 
+                   ? "text-gray-500 hover:text-gray-700" 
+                   : "text-white/60 hover:text-white"
+               )}
+             >
+               <ChevronLeft className="w-4 h-4" />
+             </motion.button>
 
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               const page = i + 1;
@@ -753,27 +823,34 @@ const Table = <T extends Record<string, any>>({
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => onPageChange?.(page)}
-                  className={cn(
-                    'px-3 py-2 text-sm rounded-lg transition-all duration-200 font-medium',
-                    currentPage === page
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/25'
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
-                  )}
+                                     className={cn(
+                     'px-3 py-2 text-sm rounded-lg transition-all duration-200 font-medium',
+                     currentPage === page
+                       ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/25'
+                       : resolvedTheme === 'light'
+                         ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                         : 'text-white/70 hover:text-white hover:bg-white/10'
+                   )}
                 >
                   {page}
                 </motion.button>
               );
             })}
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => onPageChange?.(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </motion.button>
+                         <motion.button
+               whileHover={{ scale: 1.05 }}
+               whileTap={{ scale: 0.95 }}
+               onClick={() => onPageChange?.(currentPage + 1)}
+               disabled={currentPage === totalPages}
+               className={cn(
+                 "p-2 hover:bg-white/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200",
+                 resolvedTheme === 'light' 
+                   ? "text-gray-500 hover:text-gray-700" 
+                   : "text-white/60 hover:text-white"
+               )}
+             >
+               <ChevronRight className="w-4 h-4" />
+             </motion.button>
           </div>
         </motion.div>
       )}

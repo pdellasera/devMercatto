@@ -1,15 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MobileHeader } from './MobileHeader';
+import { MobileSidebar } from './MobileSidebar';
+import { useTheme } from '../../design-system/theme/ThemeProvider';
+import { cn } from '../utils/cn';
 
 export const MobileLayout: React.FC = () => {
+  const { resolvedTheme } = useTheme();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleMenuToggle = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const handleSidebarClose = () => {
+    setSidebarOpen(false);
+  };
+
   return (
-    <div className="min-h-screen bg-[#141414] flex flex-col">
+    <div className={cn(
+      "min-h-screen flex flex-col",
+      resolvedTheme === 'light' ? "bg-[#f5f5f5]" : "bg-[#141414]"
+    )}>
       {/* Sticky Header */}
       <div className="sticky top-0 z-50">
-        <MobileHeader />
+        <MobileHeader 
+          onMenuToggle={handleMenuToggle}
+          sidebarOpen={sidebarOpen}
+        />
       </div>
+
+      {/* Mobile Sidebar */}
+      <MobileSidebar 
+        isOpen={sidebarOpen}
+        onClose={handleSidebarClose}
+      />
 
       <div className="flex flex-1">
         {/* Main Content */}

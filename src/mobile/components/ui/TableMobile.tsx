@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import {
-  Search,
+import { 
+  Search, 
   X,
   ChevronRight,
   ChevronLeft,
@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export interface TableMobileColumn<T> {
   key: string;
   header: string;
-  accessor: (item: T) => React.ReactNode;
+  accessor: (item: T, index: number, theme?: 'dark' | 'light') => React.ReactNode;
   sortable?: boolean;
   width?: string;
 }
@@ -38,6 +38,7 @@ export interface TableMobileProps<T> {
   onRowClick?: (item: T) => void;
   title?: string;
   subtitle?: string;
+  theme?: 'dark' | 'light';
   pagination?: {
     page: number;
     totalPages: number;
@@ -66,6 +67,7 @@ export function TableMobile<T>({
   onRowClick,
   title,
   subtitle,
+  theme = 'dark',
   pagination,
   onPageChange,
   onFilterChange
@@ -99,15 +101,15 @@ export function TableMobile<T>({
   const filteredData = useMemo(() => {
     if (!searchable || !searchQuery) return data;
 
-    return data.filter(item => {
-      const searchLower = searchQuery.toLowerCase();
-      return columns.some(column => {
-        const value = column.accessor(item);
-        if (typeof value === 'string') {
-          return value.toLowerCase().includes(searchLower);
-        }
-        return false;
-      });
+    return data.filter((item, itemIndex) => {
+        const searchLower = searchQuery.toLowerCase();
+        return columns.some(column => {
+          const value = column.accessor(item, itemIndex, theme);
+          if (typeof value === 'string') {
+            return value.toLowerCase().includes(searchLower);
+          }
+          return false;
+        });
     });
   }, [data, searchQuery, searchable, columns]);
 
@@ -264,6 +266,9 @@ export function TableMobile<T>({
 
   // Clases responsive dinámicas
   const getResponsiveClasses = {
+    // Main container
+    mainContainerWidth: screenSize === 'xs' ? 'w-[90vw]' : screenSize === 'sm' ? 'w-[90vw]' : 'w-[95vw]',
+    
     // Header
     headerPadding: screenSize === 'xs' ? 'p-2' : screenSize === 'sm' ? 'p-3' : 'p-3 sm:p-4',
     headerMargin: screenSize === 'xs' ? 'mb-2' : screenSize === 'sm' ? 'mb-3' : 'mb-3 sm:mb-4',
@@ -303,84 +308,148 @@ export function TableMobile<T>({
 
   return (
     <>
-      <div className={cn("flex flex-col h-full w-full", className)}>
+      <div className={cn(
+        "flex flex-col h-full w-full",
+        theme === 'light' ? "glass-card-mobile-light" : "glass-card-mobile",
+        className
+      )}>
         {/* Header con título, filtro y búsqueda */}
-        <div className={cn("glass-card-mobile relative group", getResponsiveClasses.headerPadding, getResponsiveClasses.headerMargin)}>
+        <div className="w-full px-3 sm:px-4 lg:px-6">
+        <div className={cn("relative group", getResponsiveClasses.headerPadding, getResponsiveClasses.headerMargin)}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
-              <h3 className={cn("font-semibold text-white tracking-wide", getResponsiveClasses.titleSize)}>{title}</h3>
-            </div>
-          </div>
+              <h3 className={cn(
+                "font-semibold tracking-wide",
+                theme === 'light' ? "text-gray-800" : "text-white",
+                getResponsiveClasses.titleSize
+              )}>{title}</h3>
+                </div>
+              </div>
 
           {/* Botón flotante de filtro - solo visible en mobile */}
           <button
             onClick={() => setShowFilterModal(true)}
             className={cn(
-              "absolute top-3 right-3 p-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 transition-all duration-300 shadow-lg backdrop-blur-xl lg:hidden",
+              "absolute top-3 right-3 p-2 rounded-lg transition-all duration-300 shadow-lg backdrop-blur-xl lg:hidden",
+              theme === 'light' 
+                ? "bg-gray-200/80 hover:bg-gray-300/80 border border-gray-300/50" 
+                : "bg-white/10 hover:bg-white/20 border border-white/20",
               screenSize === 'xs' && "top-2 right-2 p-1.5"
             )}
           >
-            <Filter className={cn("text-white/80 hover:text-white transition-colors", screenSize === 'xs' ? "w-3.5 h-3.5" : "w-4 h-4")} />
+            <Filter className={cn(
+              "transition-colors",
+              theme === 'light' ? "text-gray-600 hover:text-gray-800" : "text-white/80 hover:text-white",
+              screenSize === 'xs' ? "w-3.5 h-3.5" : "w-4 h-4"
+            )} />
           </button>
 
           {/* Subtitle */}
           {subtitle && (
-            <div className="text-white/70 text-sm mb-3">
+            <div className={cn(
+              "text-sm mb-3",
+              theme === 'light' ? "text-gray-600" : "text-white/70"
+            )}>
               {loading ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
                   <span>Preparando datos...</span>
-                </div>
+                          </div>
               ) : (
                 subtitle
+                  )}
+                </div>
               )}
-            </div>
-          )}
 
           {/* Búsqueda */}
-          {searchable && (
+            {searchable && (
             <div className="relative">
-              <Search className={cn("absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50", screenSize === 'xs' ? "w-3.5 h-3.5" : "w-4 h-4")} />
-              <input
-                type="text"
-                placeholder={searchPlaceholder}
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
+              <Search className={cn(
+                "absolute left-3 top-1/2 transform -translate-y-1/2",
+                theme === 'light' ? "text-gray-500" : "text-white/50",
+                screenSize === 'xs' ? "w-3.5 h-3.5" : "w-4 h-4"
+              )} />
+                <input
+                  type="text"
+                  placeholder={searchPlaceholder}
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
                 className={cn(
-                  "w-full pl-10 pr-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg sm:rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200",
+                  "w-full pl-10 pr-10 backdrop-blur-xl rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200",
+                  theme === 'light' 
+                    ? "bg-gray-100/80 border border-gray-300/50 text-gray-800 placeholder-gray-500" 
+                    : "bg-white/5 border border-white/10 text-white placeholder-white/50",
                   getResponsiveClasses.searchPadding,
                   getResponsiveClasses.searchTextSize
                 )}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => handleSearch('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white transition-colors"
-                >
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => handleSearch('')}
+                  className={cn(
+                    "absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors",
+                    theme === 'light' ? "text-gray-500 hover:text-gray-700" : "text-white/50 hover:text-white"
+                  )}
+                  >
                   <X className={cn(screenSize === 'xs' ? "w-3.5 h-3.5" : "w-4 h-4")} />
-                </button>
-              )}
-            </div>
-          )}
+                  </button>
+                )}
+              </div>
+            )}
+        </div>
         </div>
 
         {/* Contenido de la tabla */}
         <div className={cn("flex-1 overflow-hidden", getResponsiveClasses.contentPadding)}>
+          <div className="w-full px-3 sm:px-4 lg:px-6"> 
           {loading ? (
             <div className="p-4">
               {/* Skeleton Loading */}
               <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="border-b border-white/5 hover:bg-white/2 transition-all duration-300 p-4 rounded-xl">
+                  <div key={index} className={cn(
+                    "border-b transition-all duration-300 p-4 rounded-xl",
+                    theme === 'light' ? "border-gray-200/50 hover:bg-gray-100/50" : "border-white/5 hover:bg-white/2"
+                  )}>
                     <div className="space-y-3">
-                      <div className="h-4 bg-gradient-to-r from-white/20 to-white/10 rounded-md shadow-sm relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+                      <div className={cn(
+                        "h-4 rounded-md shadow-sm relative overflow-hidden",
+                        theme === 'light' 
+                          ? "bg-gradient-to-r from-gray-300/50 to-gray-200/50" 
+                          : "bg-gradient-to-r from-white/20 to-white/10"
+                      )}>
+                        <div className={cn(
+                          "absolute inset-0 animate-pulse",
+                          theme === 'light' 
+                            ? "bg-gradient-to-r from-transparent via-gray-400/30 to-transparent" 
+                            : "bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                        )}></div>
                       </div>
-                      <div className="h-3 bg-gradient-to-r from-white/15 to-white/8 rounded w-3/4 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+                      <div className={cn(
+                        "h-3 rounded w-3/4 relative overflow-hidden",
+                        theme === 'light' 
+                          ? "bg-gradient-to-r from-gray-300/40 to-gray-200/40" 
+                          : "bg-gradient-to-r from-white/15 to-white/8"
+                      )}>
+                        <div className={cn(
+                          "absolute inset-0 animate-pulse",
+                          theme === 'light' 
+                            ? "bg-gradient-to-r from-transparent via-gray-400/20 to-transparent" 
+                            : "bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                        )}></div>
                       </div>
-                      <div className="h-3 bg-gradient-to-r from-white/15 to-white/8 rounded w-1/2 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+                      <div className={cn(
+                        "h-3 rounded w-1/2 relative overflow-hidden",
+                        theme === 'light' 
+                          ? "bg-gradient-to-r from-gray-300/40 to-gray-200/40" 
+                          : "bg-gradient-to-r from-white/15 to-white/8"
+                      )}>
+                        <div className={cn(
+                          "absolute inset-0 animate-pulse",
+                          theme === 'light' 
+                            ? "bg-gradient-to-r from-transparent via-gray-400/20 to-transparent" 
+                            : "bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                        )}></div>
                       </div>
                     </div>
                   </div>
@@ -392,12 +461,26 @@ export function TableMobile<T>({
               {/* Error State */}
               <div className="px-6 py-20 text-center">
                 <div className="flex flex-col items-center justify-center space-y-6">
-                  <div className="w-24 h-24 bg-gradient-to-br from-white/10 to-white/5 rounded-full flex items-center justify-center border border-white/10 shadow-2xl">
-                    <div className="w-12 h-12 text-white/40">⚠️</div>
+                  <div className={cn(
+                    "w-24 h-24 rounded-full flex items-center justify-center border shadow-2xl",
+                    theme === 'light' 
+                      ? "bg-gradient-to-br from-gray-200/80 to-gray-100/60 border-gray-300/50" 
+                      : "bg-gradient-to-br from-white/10 to-white/5 border-white/10"
+                  )}>
+                    <div className={cn(
+                      "w-12 h-12",
+                      theme === 'light' ? "text-gray-500" : "text-white/40"
+                    )}>⚠️</div>
                   </div>
                   <div className="space-y-3">
-                    <h3 className="text-xl font-semibold text-white/80 tracking-wide">Error al cargar datos</h3>
-                    <p className="text-white/50 text-sm max-w-md">{error}</p>
+                    <h3 className={cn(
+                      "text-xl font-semibold tracking-wide",
+                      theme === 'light' ? "text-gray-800" : "text-white/80"
+                    )}>Error al cargar datos</h3>
+                    <p className={cn(
+                      "text-sm max-w-md",
+                      theme === 'light' ? "text-gray-600" : "text-white/50"
+                    )}>{error}</p>
                   </div>
                 </div>
               </div>
@@ -407,12 +490,26 @@ export function TableMobile<T>({
               {/* Empty State */}
               <div className="px-6 py-20 text-center">
                 <div className="flex flex-col items-center justify-center space-y-6">
-                  <div className="w-24 h-24 bg-gradient-to-br from-white/10 to-white/5 rounded-full flex items-center justify-center border border-white/10 shadow-2xl">
-                    <Search className="w-12 h-12 text-white/40" />
+                  <div className={cn(
+                    "w-24 h-24 rounded-full flex items-center justify-center border shadow-2xl",
+                    theme === 'light' 
+                      ? "bg-gradient-to-br from-gray-200/80 to-gray-100/60 border-gray-300/50" 
+                      : "bg-gradient-to-br from-white/10 to-white/5 border-white/10"
+                  )}>
+                    <Search className={cn(
+                      "w-12 h-12",
+                      theme === 'light' ? "text-gray-500" : "text-white/40"
+                    )} />
                   </div>
                   <div className="space-y-3">
-                    <h3 className="text-xl font-semibold text-white/80 tracking-wide">{emptyMessage}</h3>
-                    <p className="text-white/50 text-sm max-w-md">
+                    <h3 className={cn(
+                      "text-xl font-semibold tracking-wide",
+                      theme === 'light' ? "text-gray-800" : "text-white/80"
+                    )}>{emptyMessage}</h3>
+                    <p className={cn(
+                      "text-sm max-w-md",
+                      theme === 'light' ? "text-gray-600" : "text-white/50"
+                    )}>
                       {searchQuery
                         ? "No se encontraron resultados para tu búsqueda. Intenta con otros términos."
                         : "No hay prospectos disponibles en este momento. Vuelve más tarde."
@@ -423,22 +520,42 @@ export function TableMobile<T>({
               </div>
             </div>
           ) : (
-            <div className="h-full overflow-y-auto">
+            <div className="h-full overflow-y-auto overflow-x-hidden">
               {/* Table Content */}
-              <div className="overflow-x-auto">
-                <div className="w-full bg-transparent border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden backdrop-blur-xl shadow-xl sm:shadow-2xl shadow-black/20">
-                  {/* Header - Solo visible en desktop, oculto en móvil */}
-                  <div className="bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-xl border-b border-white/10 hidden lg:flex">
+              <div className="w-full">
+                <div className={cn(
+                  "w-full bg-transparent border rounded-xl sm:rounded-2xl overflow-hidden backdrop-blur-xl shadow-xl sm:shadow-2xl",
+                  theme === 'light' 
+                    ? "border-gray-300/50 shadow-gray-200/50" 
+                    : "border-white/10 shadow-black/20"
+                )}>
+                  {/* Header - Visible en mobile y desktop */}
+                  <div className={cn(
+                    "backdrop-blur-xl border-b flex",
+                    theme === 'light' 
+                      ? "bg-gradient-to-r from-gray-100/80 to-gray-200/60 border-gray-300/50" 
+                      : "bg-gradient-to-r from-white/5 to-white/10 border-white/10"
+                  )}>
                     {columns.map((column) => (
                       <div
                         key={column.key}
-                        className="px-4 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wider flex-1"
+                        className={cn(
+                          "px-2 py-3 text-xs font-semibold uppercase tracking-wider flex items-center justify-center",
+                          theme === 'light' ? "text-gray-700" : "text-gray-300",
+                          column.key === 'index' && "w-8 flex-shrink-0",
+                          column.key === 'nombre' && "flex-1 min-w-0",
+                          column.key === 'club' && "w-20 flex-shrink-0",
+                          column.key === 'ovrGeneral' && "w-12 flex-shrink-0"
+                        )}
                       >
                         <button
                           onClick={() => column.sortable && handleSort(column.key)}
                           className={cn(
-                            "w-full text-left flex items-center justify-between",
-                            column.sortable && "cursor-pointer hover:bg-white/10 transition-all duration-200",
+                            "w-full flex items-center justify-center",
+                            column.sortable && cn(
+                              "cursor-pointer transition-all duration-200",
+                              theme === 'light' ? "hover:bg-gray-200/50" : "hover:bg-white/10"
+                            ),
                             sortKey === column.key && "text-blue-400"
                           )}
                         >
@@ -452,7 +569,10 @@ export function TableMobile<T>({
                                   <SortDesc className="w-3 h-3" />
                                 )
                               ) : (
-                                <div className="w-3 h-3 text-white/30">↕</div>
+                                <div className={cn(
+                                "w-3 h-3",
+                                theme === 'light' ? "text-gray-500" : "text-white/30"
+                              )}>↕</div>
                               )}
                             </div>
                           )}
@@ -471,10 +591,13 @@ export function TableMobile<T>({
                         transition={{ delay: index * 0.05 }}
                         className={cn(
                           "transition-all duration-200 group",
-                          "border-b border-white/5 hover:bg-white/2",
+                          "border-b",
+                          theme === 'light' 
+                            ? "border-gray-200/50 hover:bg-gray-100/50" 
+                            : "border-white/5 hover:bg-white/2",
                           onRowClick && "cursor-pointer",
-                          "flex flex-col lg:flex-row",
-                          "glass-card-mobile m-2"
+                          "flex items-center px-2 py-3",
+                          "w-full"
                         )}
                         onClick={() => onRowClick?.(item)}
                       >
@@ -482,25 +605,14 @@ export function TableMobile<T>({
                           <div
                             key={column.key}
                             className={cn(
-                              "flex justify-between items-center lg:flex-1 lg:justify-start lg:items-start border-b border-white/5 last:border-b-0 lg:border-b-0 transition-all duration-200",
-                              getResponsiveClasses.rowPadding,
-                              getResponsiveClasses.rowTextSize
+                              "flex items-center justify-center",
+                              column.key === 'index' && "w-8 flex-shrink-0",
+                              column.key === 'nombre' && "flex-1 min-w-0",
+                              column.key === 'club' && "w-20 flex-shrink-0",
+                              column.key === 'ovrGeneral' && "w-12 flex-shrink-0"
                             )}
                           >
-                            {
-                              column.key === 'nombre' ? null : (
-                                <div className={cn("font-medium text-gray-300 lg:hidden", getResponsiveClasses.headerTextSize, getResponsiveClasses.headerMinWidth)}>
-                                  {column.header}
-                                </div>
-                              )
-                            }
-
-                            <div className="text-white lg:hidden flex-1 text-right font-semibold">
-                              {column.accessor(item)}
-                            </div>
-                            <div className="hidden lg:block text-sm text-white font-semibold w-full">
-                              {column.accessor(item)}
-                            </div>
+                            {column.accessor(item, index, theme)}
                           </div>
                         ))}
                       </motion.div>
@@ -510,14 +622,20 @@ export function TableMobile<T>({
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
 
       {/* Paginación Fija fuera del contenedor principal */}
       {pagination && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background-secondary border-t border-white/10 backdrop-blur-xl shadow-2xl pb-safe">
-          <div className={cn("w-full mx-auto", getResponsiveClasses.paginatorMaxWidth, getResponsiveClasses.paginatorPadding)}>
-            <div className="glass-card-mobile-compact">
+        <div className={cn(
+          "fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl shadow-2xl pb-safe",
+          theme === 'light' 
+            ? "bg-gray-50/95 border-t border-gray-300/50" 
+            : "bg-background-secondary border-t border-white/10"
+        )}>
+          <div className={cn("w-full", getResponsiveClasses.paginatorPadding)}>
+                          <div className={theme === 'light' ? "glass-card-mobile-compact-light" : "glass-card-mobile-compact"}>
               {pagination.totalPages <= 1 ? (
                 // Una sola página
                 <div className="flex items-center justify-center">
@@ -540,8 +658,12 @@ export function TableMobile<T>({
                       getResponsiveClasses.navButtonSize,
                       getResponsiveClasses.navIconSize,
                       pagination.page <= 1
-                        ? "border-white/10 text-white/30 cursor-not-allowed"
-                        : "border-white/20 text-white/80 hover:bg-white/10 hover:text-white hover:border-white/30"
+                        ? theme === 'light' 
+                          ? "border-gray-300/50 text-gray-400 cursor-not-allowed"
+                          : "border-white/10 text-white/30 cursor-not-allowed"
+                        : theme === 'light'
+                          ? "border-gray-400/50 text-gray-600 hover:bg-gray-200/50 hover:text-gray-800 hover:border-gray-500/50"
+                          : "border-white/20 text-white/80 hover:bg-white/10 hover:text-white hover:border-white/30"
                     )}
                   >
                     <ChevronLeft className={getResponsiveClasses.navIconSize} />
@@ -558,13 +680,15 @@ export function TableMobile<T>({
                           getResponsiveClasses.buttonTextSize,
                           pageNum === pagination.page
                             ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/25"
-                            : "border-white/20 text-white/80 hover:bg-white/10 hover:text-white hover:border-white/30"
+                            : theme === 'light'
+                              ? "border-gray-400/50 text-gray-600 hover:bg-gray-200/50 hover:text-gray-800 hover:border-gray-500/50"
+                              : "border-white/20 text-white/80 hover:bg-white/10 hover:text-white hover:border-white/30"
                         )}
                       >
                         {pageNum}
                       </button>
                     ))}
-                  </div>
+              </div>
 
                   <button
                     onClick={() => onPageChange?.(pagination.page + 1)}
@@ -573,16 +697,20 @@ export function TableMobile<T>({
                       "rounded-lg border transition-all duration-200 touch-manipulation",
                       getResponsiveClasses.navButtonSize,
                       getResponsiveClasses.navIconSize,
-                      pagination.page >= pagination.totalPages
-                        ? "border-white/10 text-white/30 cursor-not-allowed"
+                                          pagination.page >= pagination.totalPages
+                      ? theme === 'light' 
+                        ? "border-gray-300/50 text-gray-400 cursor-not-allowed"
+                        : "border-white/10 text-white/30 cursor-not-allowed"
+                      : theme === 'light'
+                        ? "border-gray-400/50 text-gray-600 hover:bg-gray-200/50 hover:text-gray-800 hover:border-gray-500/50"
                         : "border-white/20 text-white/80 hover:bg-white/10 hover:text-white hover:border-white/30"
                     )}
                   >
                     <ChevronRight className={getResponsiveClasses.navIconSize} />
                   </button>
-                </div>
-              )}
-            </div>
+          </div>
+        )}
+      </div>
           </div>
         </div>
       )}
@@ -592,9 +720,9 @@ export function TableMobile<T>({
         {showFilterModal && (
           <>
             {/* Overlay de fondo */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowFilterModal(false)}
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
@@ -674,7 +802,7 @@ export function TableMobile<T>({
                               selectedFilters.activeCategory === category.key ? 'text-white' : 'text-white/80'
                             )}>
                               {category.label}
-                            </span>
+            </span>
                             {(() => {
                               const filterValue = selectedFilters[category.key];
                               if (!filterValue) return null;
@@ -830,14 +958,14 @@ export function TableMobile<T>({
                                     </motion.label>
                                   ))}
                                 </div>
-                              </div>
+          </div>
                             );
                           }
                           return null;
                         })()}
-                      </motion.div>
-                    )}
-                  </div>
+        </motion.div>
+      )}
+    </div>
                 </div>
               </div>
 

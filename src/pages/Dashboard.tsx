@@ -20,6 +20,8 @@ import {
   List
 } from 'lucide-react';
 import { MainLayout } from '../components/layout/MainLayout';
+import { useTheme } from '../design-system/theme/ThemeProvider';
+import { cn } from '../utils/cn';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../design-system/components/Card/Card';
 import { Button } from '../design-system';
 import { SearchBar } from '../components/ui/SearchBar';
@@ -73,6 +75,7 @@ export const Dashboard: React.FC = () => {
   } = useProspects();
 
   const { isAuthenticated, user } = useAuth();
+  const { resolvedTheme } = useTheme();
 
   // Debug logs
   console.log('Dashboard render:', { prospects, loading, error, metrics });
@@ -208,15 +211,26 @@ export const Dashboard: React.FC = () => {
           <div className="flex-1 min-w-0">
             {/* Primera línea: Nombre, edad y posición */}
             <div className="flex items-center space-x-2 mb-1">
-              <h3 className="font-bold text-white text-sm leading-tight truncate">
+              <h3 className={cn(
+                "font-bold text-sm leading-tight truncate",
+                resolvedTheme === 'light' ? "text-gray-900" : "text-white"
+              )}>
                 {prospect.name}
               </h3>
-              <span className="text-xs text-gray-400 bg-gray-700/50 px-1.5 py-0.5 rounded-full">
+              <span className={cn(
+                "text-xs px-1.5 py-0.5 rounded-full",
+                resolvedTheme === 'light' 
+                  ? "text-gray-600 bg-gray-200" 
+                  : "text-gray-400 bg-gray-700/50"
+              )}>
                 {prospect.age} años
               </span>
               <div className="flex items-center space-x-1">
                 <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                <span className="text-xs text-gray-300 font-medium">
+                <span className={cn(
+                  "text-xs font-medium",
+                  resolvedTheme === 'light' ? "text-gray-700" : "text-gray-300"
+                )}>
                   {prospect.position}
                 </span>
               </div>
@@ -225,14 +239,26 @@ export const Dashboard: React.FC = () => {
             {/* Segunda línea: Club y contrato en línea */}
             <div className="flex items-center space-x-3 text-xs">
               <div className="flex items-center space-x-1">
-                <span className="text-gray-400">Club:</span>
-                <span className="text-white font-semibold bg-gray-700/50 px-1.5 py-0.5 rounded-full">
+                <span className={cn(
+                  resolvedTheme === 'light' ? "text-gray-600" : "text-gray-400"
+                )}>Club:</span>
+                <span className={cn(
+                  "font-semibold px-1.5 py-0.5 rounded-full",
+                  resolvedTheme === 'light' 
+                    ? "text-gray-800 bg-gray-200" 
+                    : "text-white bg-gray-700/50"
+                )}>
                   {prospect.status || 'Sin club'}
                 </span>
               </div>
               <div className="flex items-center space-x-1">
-                <span className="text-gray-400">Contrato:</span>
-                <span className="text-white font-semibold">
+                <span className={cn(
+                  resolvedTheme === 'light' ? "text-gray-600" : "text-gray-400"
+                )}>Contrato:</span>
+                <span className={cn(
+                  "font-semibold",
+                  resolvedTheme === 'light' ? "text-gray-800" : "text-white"
+                )}>
                   {prospect.birthdayDate ? new Date(prospect.birthdayDate).toLocaleDateString('es-ES') : 'Sin fecha'}
                 </span>
               </div>
@@ -261,8 +287,14 @@ export const Dashboard: React.FC = () => {
       header: 'Año de Nacimiento',
       accessor: (prospect: Prospect) => (
         <div className="text-center">
-          <div className="font-semibold text-sm text-white">{prospect.yearOfbirth}</div>
-          <div className="text-xs text-gray-300 mt-1">
+          <div className={cn(
+            "font-semibold text-sm",
+            resolvedTheme === 'light' ? "text-gray-900" : "text-white"
+          )}>{prospect.yearOfbirth}</div>
+          <div className={cn(
+            "text-xs mt-1",
+            resolvedTheme === 'light' ? "text-gray-600" : "text-gray-300"
+          )}>
             {prospect.age} años
           </div>
         </div>
@@ -273,8 +305,14 @@ export const Dashboard: React.FC = () => {
       header: 'Talla',
       accessor: (prospect: Prospect) => (
         <div className="text-center">
-          <div className="font-semibold text-sm text-white">{prospect.talla}m</div>
-          <div className="text-xs text-gray-300 mt-1">
+          <div className={cn(
+            "font-semibold text-sm",
+            resolvedTheme === 'light' ? "text-gray-900" : "text-white"
+          )}>{prospect.talla}m</div>
+          <div className={cn(
+            "text-xs mt-1",
+            resolvedTheme === 'light' ? "text-gray-600" : "text-gray-300"
+          )}>
             {(prospect.talla * 100).toFixed(0)} cm
           </div>
         </div>
@@ -445,8 +483,14 @@ export const Dashboard: React.FC = () => {
                                {/* Header simplificado */}
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-2xl font-bold text-white mb-1">Lista de Prospectos</h3>
-                    <div className="text-gray-300 text-sm">
+                    <h3 className={cn(
+                      "text-2xl font-bold mb-1",
+                      resolvedTheme === 'light' ? "text-gray-900" : "text-white"
+                    )}>Lista de Prospectos</h3>
+                    <div className={cn(
+                      "text-sm",
+                      resolvedTheme === 'light' ? "text-gray-600" : "text-gray-300"
+                    )}>
                       {loading ? (
                         <div className="flex items-center space-x-2">
                           <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
@@ -496,12 +540,24 @@ export const Dashboard: React.FC = () => {
             <motion.div variants={itemVariants} className="mt-8">
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-300">
-                    Mostrando <span className="font-semibold text-white">{(pagination.page - 1) * pagination.limit + 1}</span> a{' '}
-                    <span className="font-semibold text-white">
+                  <div className={cn(
+                    "text-sm",
+                    resolvedTheme === 'light' ? "text-gray-600" : "text-gray-300"
+                  )}>
+                    Mostrando <span className={cn(
+                      "font-semibold",
+                      resolvedTheme === 'light' ? "text-gray-900" : "text-white"
+                    )}>{(pagination.page - 1) * pagination.limit + 1}</span> a{' '}
+                    <span className={cn(
+                      "font-semibold",
+                      resolvedTheme === 'light' ? "text-gray-900" : "text-white"
+                    )}>
                       {Math.min(pagination.page * pagination.limit, pagination.total)}
                     </span>{' '}
-                    de <span className="font-semibold text-white">{pagination.total}</span> prospectos
+                    de <span className={cn(
+                      "font-semibold",
+                      resolvedTheme === 'light' ? "text-gray-900" : "text-white"
+                    )}>{pagination.total}</span> prospectos
                   </div>
 
                   <div className="flex items-center space-x-4">

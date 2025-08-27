@@ -22,6 +22,7 @@ import {
   X
 } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { useTheme } from '../../design-system/theme/ThemeProvider';
 import {
   useMobilePerformance,
   useMobileGestures,
@@ -94,6 +95,7 @@ export const DashboardMobile: React.FC = () => {
   } = useProspects();
 
   const { isAuthenticated, user } = useAuth();
+  const { resolvedTheme } = useTheme();
 
   // Debug logs
   console.log('DashboardMobile render:', { prospects, loading, error, metrics });
@@ -236,76 +238,65 @@ export const DashboardMobile: React.FC = () => {
   // Table columns configuration - Adaptada para mobile con responsive design
   const columns = [
     {
+      key: 'index',
+      header: '#',
+      accessor: (prospect: Prospect, index: number, theme?: 'dark' | 'light') => (
+        <div className="text-center">
+          <div className={cn(
+            "font-semibold text-xs",
+            resolvedTheme === 'light' ? "text-gray-500" : "text-gray-400"
+          )}>{index + 1}</div>
+        </div>
+      ),
+    },
+    {
       key: 'nombre',
-      header: 'Jugador',
-      accessor: (prospect: Prospect) => (
-        <div className="flex items-start space-x-2 sm:space-x-3 py-1 sm:py-2 hover:bg-white/5 transition-all duration-200 rounded-lg px-0.5 sm:px-1 min-w-0">
-          {/* Avatar con indicador de estado */}
+      header: 'Jugadores',
+      accessor: (prospect: Prospect, index: number, theme?: 'dark' | 'light') => (
+        <div className="flex items-center gap-1 min-w-0">
+          {/* Avatar */}
           <div className="relative flex-shrink-0">
             <Avatar
               src={prospect.imgData}
               alt={`${prospect.name} - ${prospect.position}`}
               fallback={prospect.name}
               size="sm"
-              shape="square"
-              className="shadow-lg w-8 h-8 sm:w-10 sm:h-10"
+              shape="circle"
+              className="shadow-lg w-6 h-6 sm:w-8 sm:h-8"
             />
             {/* Indicador de estado premium */}
             {prospect.fullaccess && (
-              <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-[5px] sm:text-[6px] font-bold text-black">★</span>
+              <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-[4px] font-bold text-black">★</span>
               </div>
             )}
           </div>
 
-          {/* Información del jugador - Layout ultra-compacto y responsive */}
-          <div className="flex-1 min-w-0 overflow-hidden">
-            {/* Primera línea: Nombre y edad */}
-            <div className="flex items-center space-x-1 sm:space-x-2 mb-0.5 sm:mb-1 min-w-0">
-              <h3 className="font-bold text-white text-xs sm:text-sm leading-tight truncate flex-1 min-w-0">
-                {prospect.name}
-              </h3>
-              <span className="text-[10px] sm:text-xs text-gray-400 bg-gray-700/50 px-1 sm:px-1.5 py-0.5 rounded-full flex-shrink-0">
-                {prospect.age} años
-              </span>
-            </div>
-
-            {/* Segunda línea: Posición y club */}
-            <div className="flex items-center space-x-1 sm:space-x-2 mb-0.5 sm:mb-1 min-w-0">
-              <div className="flex items-center space-x-0.5 sm:space-x-1 flex-shrink-0">
-                <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-blue-400 rounded-full"></div>
-                <span className="text-[10px] sm:text-xs text-gray-300 font-medium truncate">
-                  {prospect.position}
-                </span>
-              </div>
-              <div className="flex items-center space-x-0.5 sm:space-x-1 min-w-0 flex-1">
-                <span className="text-[10px] sm:text-xs text-gray-400 flex-shrink-0">Club:</span>
-                <span className="text-[10px] sm:text-xs text-white font-semibold bg-gray-700/50 px-1 sm:px-1.5 py-0.5 rounded-full truncate">
-                  {prospect.status || 'Sin club'}
-                </span>
-              </div>
-            </div>
-
-            {/* Tercera línea: Contrato y badges */}
-            <div className="flex items-center space-x-1 sm:space-x-2 min-w-0">
-              <div className="flex items-center space-x-0.5 sm:space-x-1 min-w-0 flex-1">
-                <span className="text-[10px] sm:text-xs text-gray-400 flex-shrink-0">Contrato:</span>
-                <span className="text-[10px] sm:text-xs text-white font-semibold truncate">
-                  {prospect.birthdayDate ? new Date(prospect.birthdayDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'Sin fecha'}
-                </span>
-              </div>
-              <div className="flex items-center space-x-1 flex-shrink-0">
-                {prospect.fullaccess && (
-                  <span className="text-[8px] sm:text-[9px] bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-1 sm:px-1.5 py-0.5 rounded-full font-bold shadow-sm">
-                    PREMIUM
-                  </span>
-                )}
-                <span className={`text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0 ${prospect.status === 'Contratado'
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                    : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                  }`}>
-                  {prospect.status === 'Contratado' ? 'ACTIVO' : 'PENDIENTE'}
-                </span>
+          {/* Información del jugador */}
+          <div className="min-w-0 flex flex-col items-start justify-start">
+            <h3 className="font-bold text-blue-400 text-xs leading-tight truncate">{prospect.name}</h3>
+            <div className="flex items-center gap-1">
+              <span className={cn(
+                "text-[10px]",
+                theme === 'light' ? "text-gray-600" : "text-gray-300"
+              )}>{prospect.position}</span>
+              <span className={cn(
+                "text-[8px]",
+                theme === 'light' ? "text-gray-500" : "text-gray-400"
+              )}>•</span>
+              <span className={cn(
+                "text-[10px]",
+                theme === 'light' ? "text-gray-600" : "text-gray-300"
+              )}>{prospect.age} años</span>
+              <span className={cn(
+                "text-[8px]",
+                theme === 'light' ? "text-gray-500" : "text-gray-400"
+              )}>•</span>
+              <div className={cn(
+                "w-4 h-2 rounded-sm flex items-center justify-center",
+                theme === 'light' ? "bg-gray-200" : "bg-gray-600"
+              )}>
+                <span className="text-[5px] text-white font-semibold">CO</span>
               </div>
             </div>
           </div>
@@ -313,129 +304,47 @@ export const DashboardMobile: React.FC = () => {
       ),
     },
     {
-      key: 'talla',
-      header: 'Talla',
-      accessor: (prospect: Prospect) => (
+      key: 'club',
+      header: 'Club',
+      accessor: (prospect: Prospect, index: number, theme?: 'dark' | 'light') => (
         <div className="text-center">
-          <div className="font-semibold text-xs sm:text-sm text-white">{prospect.talla}m</div>
+          <div className={cn(
+            "w-5 h-5 rounded-full flex items-center justify-center mx-auto",
+            theme === 'light' ? "bg-gray-200" : "bg-gray-600"
+          )}>
+            <span className="text-[6px] text-white font-semibold">CL</span>
+          </div>
+          <div className={cn(
+            "text-[8px] mt-0.5 truncate",
+            theme === 'light' ? "text-gray-600" : "text-gray-300"
+          )}>{prospect.status || 'Sin club'}</div>
         </div>
       ),
     },
     {
-      key: 'overallRating',
+      key: 'ovrGeneral',
       header: 'OVR',
-      accessor: (prospect: Prospect) => {
+      accessor: (prospect: Prospect, index: number, theme?: 'dark' | 'light') => {
         const overall = prospect.ovrGeneral || 0;
         return (
-          <div className="text-center">
-            <div className={`font-semibold text-xs sm:text-sm px-1 sm:px-2 py-0.5 sm:py-1 rounded-sm ${overall === 0 ? 'text-gray-400' :
-              overall >= 90 ? 'text-green-400' :
-                overall >= 70 ? 'text-yellow-400' :
-                  overall >= 60 ? 'text-orange-400' :
-                    'text-red-400'
-              }`}>
+          <div className="text-right">
+            <div className={cn(
+              "font-semibold text-xs",
+              overall === 0 
+                ? (theme === 'light' ? 'text-gray-500' : 'text-gray-400')
+                : overall >= 90 
+                  ? 'text-green-400' 
+                  : overall >= 70 
+                    ? 'text-yellow-400' 
+                    : overall >= 60 
+                      ? 'text-orange-400' 
+                      : 'text-red-400'
+            )}>
               {overall === 0 ? '-' : overall}
             </div>
           </div>
         );
       },
-    },
-    {
-      key: 'ovrFisico',
-      header: 'Físico',
-      accessor: (prospect: Prospect) => (
-        <div className="text-center">
-          <div className={`font-semibold text-xs sm:text-sm ${prospect.ovrFisico === 0 ? 'text-gray-400' :
-            prospect.ovrFisico >= 90 ? 'text-green-400' :
-              prospect.ovrFisico >= 70 ? 'text-yellow-400' :
-                prospect.ovrFisico >= 60 ? 'text-orange-400' :
-                  'text-red-400'
-            }`}>
-            {prospect.ovrFisico === 0 ? '-' : prospect.ovrFisico}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'potencia',
-      header: 'Potencia',
-      accessor: (prospect: Prospect) => (
-        <div className="text-center">
-          <div className={`font-semibold text-xs sm:text-sm ${prospect.potencia === 0 ? 'text-gray-400' :
-            prospect.potencia >= 90 ? 'text-green-400' :
-              prospect.potencia >= 70 ? 'text-yellow-400' :
-                prospect.potencia >= 60 ? 'text-orange-400' :
-                  'text-red-400'
-            }`}>
-            {prospect.potencia === 0 ? '-' : prospect.potencia}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'resistencia',
-      header: 'Resistencia',
-      accessor: (prospect: Prospect) => (
-        <div className="text-center">
-          <div className={`font-semibold text-xs sm:text-sm ${prospect.resistencia === 0 ? 'text-gray-400' :
-            prospect.resistencia >= 90 ? 'text-green-400' :
-              prospect.resistencia >= 70 ? 'text-yellow-400' :
-                prospect.resistencia >= 60 ? 'text-orange-400' :
-                  'text-red-400'
-            }`}>
-            {prospect.resistencia === 0 ? '-' : prospect.resistencia}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'ovrTecnico',
-      header: 'Técnico',
-      accessor: (prospect: Prospect) => (
-        <div className="text-center">
-          <div className={`font-semibold text-xs sm:text-sm ${prospect.ovrTecnico === 0 ? 'text-gray-400' :
-            prospect.ovrTecnico >= 90 ? 'text-green-400' :
-              prospect.ovrTecnico >= 70 ? 'text-yellow-400' :
-                prospect.ovrTecnico >= 60 ? 'text-orange-400' :
-                  'text-red-400'
-            }`}>
-            {prospect.ovrTecnico === 0 ? '-' : prospect.ovrTecnico}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'overCompetencia',
-      header: 'Partido',
-      accessor: (prospect: Prospect) => (
-        <div className="text-center">
-          <div className={`font-semibold text-xs sm:text-sm ${prospect.overCompetencia === 0 ? 'text-gray-400' :
-            prospect.overCompetencia >= 90 ? 'text-green-400' :
-              prospect.overCompetencia >= 70 ? 'text-yellow-400' :
-                prospect.overCompetencia >= 60 ? 'text-orange-400' :
-                  'text-red-400'
-            }`}>
-            {prospect.overCompetencia === 0 ? '-' : prospect.overCompetencia}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'video',
-      header: 'Video',
-      accessor: (prospect: Prospect) => (
-        <div className="flex items-center justify-center">
-          {prospect.videos ? (
-            <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-white/20 to-white/10 rounded flex items-center justify-center">
-              <span className="text-red-400 text-[10px] sm:text-xs">▶</span>
-            </div>
-          ) : (
-            <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-700/30 rounded flex items-center justify-center">
-              <span className="text-gray-500 text-[10px] sm:text-xs">—</span>
-            </div>
-          )}
-        </div>
-      ),
     },
   ];
 
@@ -445,23 +354,35 @@ export const DashboardMobile: React.FC = () => {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="max-w-full mx-auto px-1 sm:px-2 lg:px-4 py-1 pb-16 sm:pb-20 flex flex-col flex-1"
+        className="w-full py-1 pb-16 sm:pb-20 flex flex-col flex-1"
       >
         {/* Authentication Toast */}
         {!isAuthenticated && showAuthToast && (
-          <motion.div 
+          <motion.div
             variants={itemVariants}
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             className="mb-4 flex-shrink-0"
           >
-            <div className="glass-card-mobile relative">
+            <div className={cn(
+              "relative",
+              resolvedTheme === 'light' ? "glass-card-mobile-light" : "glass-card-mobile"
+            )}>
               <div className="flex items-center gap-3">
-                <UserPlus className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                <UserPlus className={cn(
+                  "w-4 h-4 flex-shrink-0",
+                  resolvedTheme === 'light' ? "text-blue-600" : "text-blue-400"
+                )} />
                 <div className="flex-1">
-                  <h3 className="text-sm font-medium text-blue-300">¿Quieres contactar atletas?</h3>
-                  <p className="text-xs text-blue-200 mt-1">
+                  <h3 className={cn(
+                    "text-sm font-medium",
+                    resolvedTheme === 'light' ? "text-blue-700" : "text-blue-300"
+                  )}>¿Quieres contactar atletas?</h3>
+                  <p className={cn(
+                    "text-xs mt-1",
+                    resolvedTheme === 'light' ? "text-blue-600" : "text-blue-200"
+                  )}>
                     Inicia sesión para contactar prospectos y acceder a funciones avanzadas.
                   </p>
                 </div>
@@ -475,7 +396,12 @@ export const DashboardMobile: React.FC = () => {
                   </MobileButton>
                   <button
                     onClick={() => setShowAuthToast(false)}
-                    className="p-1 text-blue-300 hover:text-blue-100 transition-colors rounded-full hover:bg-blue-500/10"
+                    className={cn(
+                      "p-1 transition-colors rounded-full",
+                      resolvedTheme === 'light' 
+                        ? "text-blue-600 hover:text-blue-800 hover:bg-blue-100" 
+                        : "text-blue-300 hover:text-blue-100 hover:bg-blue-500/10"
+                    )}
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -505,12 +431,18 @@ export const DashboardMobile: React.FC = () => {
             onRowClick={(prospect: Prospect) => handleViewDetails(Number(prospect.sessionID))}
             title="Lista de Prospectos"
             subtitle={loading ? undefined : `${prospects?.length || 0} prospectos encontrados`}
-            pagination={pagination}
+            theme={resolvedTheme}
+            pagination={{
+              page: pagination.page,
+              totalPages: pagination.totalPages,
+              totalItems: pagination.total,
+              itemsPerPage: pagination.limit
+            }}
             onPageChange={setPage}
           />
         </div>
-            </motion.div>
-   
+      </motion.div>
+
       {/* Login Modal */}
       <LoginModal
         isOpen={showLoginModal}

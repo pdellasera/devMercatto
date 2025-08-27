@@ -11,9 +11,13 @@ import {
   Plus,
   LogIn,
   UserPlus,
-  ChevronDown
+  ChevronDown,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useTheme } from '../../design-system/theme/ThemeProvider';
+import { cn } from '../../utils/cn';
 import { Avatar } from '../ui/Avatar';
 import { SearchBar } from '../ui/SearchBar';
 import { Button } from '../../design-system';
@@ -37,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
   sidebarOpen = false,
 }) => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, resolvedTheme, toggleTheme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [ageFilter, setAgeFilter] = useState('Mayor');
@@ -100,37 +105,77 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Center - Slogan (Black background) */}
+          {/* Center - Slogan */}
           <div className="hidden lg:flex items-center justify-center flex-1">
             <div className="text-center">
               <p className="text-sm font-semibold tracking-wide">
-                <span className="text-white">Encuentra al próximo </span>
+                <span className={cn(
+                  resolvedTheme === 'light' ? "text-black" : "text-white"
+                )}>Encuentra al próximo </span>
                 <span className="text-green-400 font-bold">crack</span>
-                <span className="text-white">: scouting deportivo más </span>
+                <span className={cn(
+                  resolvedTheme === 'light' ? "text-black" : "text-white"
+                )}>: scouting deportivo más </span>
                 <span className="text-green-400 font-bold">preciso</span>
-                <span className="text-white"> y </span>
+                <span className={cn(
+                  resolvedTheme === 'light' ? "text-black" : "text-white"
+                )}> y </span>
                 <span className="text-green-400 font-bold">eficiente</span>
-                <span className="text-white">.</span>
+                <span className={cn(
+                  resolvedTheme === 'light' ? "text-black" : "text-white"
+                )}>.</span>
               </p>
             </div>
           </div>
 
-          {/* Right side - Controls (Black background) */}
-          <div className="flex items-center justify-end space-x-6 text-white">
+                    {/* Right side - Controls */}
+          <div className={cn(
+            "flex items-center justify-end space-x-6",
+            resolvedTheme === 'light' ? "text-black" : "text-white"
+          )}>
          
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className={cn(
+                "p-2 rounded-md hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200",
+                resolvedTheme === 'light' 
+                  ? "text-black hover:text-gray-700" 
+                  : "text-white hover:text-green-400"
+              )}
+              title={resolvedTheme === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+            >
+              {resolvedTheme === 'dark' ? (
+                <Sun className="w-4 h-4" />
+              ) : (
+                <Moon className="w-4 h-4" />
+              )}
+            </button>
+
             {/* Go to Panel Button and Email - Only show when authenticated */}
             {isAuthenticated && (
               <div className="flex items-center space-x-3">
-                <button className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 rounded-lg px-4 py-2 transition-colors">
-                  <Bell className="w-4 h-4 text-white" />
+                <button className={cn(
+                  "flex items-center space-x-2 rounded-lg px-4 py-2 transition-colors",
+                  resolvedTheme === 'light'
+                    ? "bg-gray-200 hover:bg-gray-300 text-black"
+                    : "bg-gray-700 hover:bg-gray-600 text-white"
+                )}>
+                  <Bell className="w-4 h-4" />
                   <span className="text-sm font-medium">Ir a Panel</span>
                 </button>
                 
                 {/* Divider */}
-                <div className="w-px h-6 bg-gray-600"></div>
+                <div className={cn(
+                  "w-px h-6",
+                  resolvedTheme === 'light' ? "bg-gray-400" : "bg-gray-600"
+                )}></div>
                 
                 {/* Email */}
-                <span className="text-sm text-gray-300">
+                <span className={cn(
+                  "text-sm",
+                  resolvedTheme === 'light' ? "text-black" : "text-gray-300"
+                )}>
                   {user?.email || 'placement@prospect1.app'}
                 </span>
               </div>

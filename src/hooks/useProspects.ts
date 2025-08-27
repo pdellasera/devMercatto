@@ -39,10 +39,10 @@ export const useProspects = () => {
       console.log('fetchProspects called with filters:', newFilters);
       setState(prev => ({ ...prev, loading: true, error: null }));
 
-      const filters = { ...state.filters, ...newFilters };
-      console.log('Using filters:', filters);
+      const effectiveFilters = newFilters ? { ...state.filters, ...newFilters } : state.filters;
+      console.log('Using filters:', effectiveFilters);
       
-      const response: ProspectsResponse = await prospectsService.getProspects(filters);
+      const response: ProspectsResponse = await prospectsService.getProspects(effectiveFilters);
       console.log('Prospects response:', response);
 
       setState(prev => ({
@@ -54,7 +54,7 @@ export const useProspects = () => {
           total: 0,
           totalPages: 0,
         },
-        filters,
+        // No modificar filters aquí para evitar bucles; filters se cambia solo con setFilters/setPage
         loading: false,
       }));
     } catch (error) {
@@ -271,14 +271,13 @@ export const useProspects = () => {
     console.log('Initial useEffect - fetching prospects and metrics');
     fetchProspects();
     fetchMetrics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
-  // Refetch when filters change
+  // Refetch when filters change (always fetch on any filter/page change)
   useEffect(() => {
     console.log('Filters changed, refetching prospects:', state.filters);
-    if ((state.filters.page && state.filters.page > 1) || state.filters.search || state.filters.position || state.filters.status) {
-      fetchProspects();
-    }
+    fetchProspects();
   }, [state.filters, fetchProspects]);
 
   return {

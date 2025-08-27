@@ -10,6 +10,7 @@ const avatarVariants = cva(
         sm: 'avatar-small',
         md: 'avatar-medium',
         lg: 'avatar-large',
+        xl: 'avatar-xlarge',
       },
       shape: {
         circle: 'rounded-full',

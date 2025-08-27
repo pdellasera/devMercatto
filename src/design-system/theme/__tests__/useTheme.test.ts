@@ -8,82 +8,26 @@ const wrapper = ({ children }: { children: React.ReactNode }) => {
 
 describe('useTheme Hook', () => {
   beforeEach(() => {
+    // Clear localStorage before each test
     localStorage.clear();
   });
 
-  it('returns default theme', () => {
+  it('should provide default theme', () => {
     const { result } = renderHook(() => useTheme(), { wrapper });
-    
-    expect(result.current.theme).toBe('light');
+    expect(result.current.theme).toBe('dark');
   });
 
-  it('toggles theme', () => {
+  it('should toggle theme', () => {
     const { result } = renderHook(() => useTheme(), { wrapper });
     
     act(() => {
       result.current.toggleTheme();
     });
     
-    expect(result.current.theme).toBe('dark');
-  });
-
-  it('sets specific theme', () => {
-    const { result } = renderHook(() => useTheme(), { wrapper });
-    
-    act(() => {
-      result.current.setTheme('dark');
-    });
-    
-    expect(result.current.theme).toBe('dark');
-  });
-
-  it('persists theme in localStorage', () => {
-    const { result } = renderHook(() => useTheme(), { wrapper });
-    
-    act(() => {
-      result.current.setTheme('dark');
-    });
-    
-    // Verify theme was set
-    expect(result.current.theme).toBe('dark');
-  });
-
-  it('loads theme from localStorage on mount', () => {
-    // This test would need more complex setup to properly test localStorage
-    // For now, we'll test the basic functionality
-    const { result } = renderHook(() => useTheme(), { wrapper });
-    
     expect(result.current.theme).toBe('light');
   });
 
-  it('handles invalid theme from localStorage', () => {
-    // This test would need more complex setup to properly test localStorage
-    // For now, we'll test the basic functionality
-    const { result } = renderHook(() => useTheme(), { wrapper });
-    
-    expect(result.current.theme).toBe('light');
-  });
-
-  it('toggles theme multiple times', () => {
-    const { result } = renderHook(() => useTheme(), { wrapper });
-    
-    act(() => {
-      result.current.toggleTheme();
-    });
-    expect(result.current.theme).toBe('dark');
-    
-    act(() => {
-      result.current.toggleTheme();
-    });
-    expect(result.current.theme).toBe('light');
-    
-    act(() => {
-      result.current.toggleTheme();
-    });
-    expect(result.current.theme).toBe('dark');
-  });
-
-  it('sets theme to same value', () => {
+  it('should set specific theme', () => {
     const { result } = renderHook(() => useTheme(), { wrapper });
     
     act(() => {
@@ -93,14 +37,47 @@ describe('useTheme Hook', () => {
     expect(result.current.theme).toBe('light');
   });
 
-  it('updates document class when theme changes', () => {
+  it('should persist theme in localStorage', () => {
     const { result } = renderHook(() => useTheme(), { wrapper });
     
     act(() => {
-      result.current.setTheme('dark');
+      result.current.setTheme('light');
     });
     
-    expect(document.documentElement.classList.contains('dark')).toBe(true);
-    expect(document.documentElement.classList.contains('light')).toBe(false);
+    expect(localStorage.getItem('theme')).toBe('light');
+  });
+
+  it('should load theme from localStorage on mount', () => {
+    localStorage.setItem('theme', 'light');
+    
+    const { result } = renderHook(() => useTheme(), { wrapper });
+    
+    expect(result.current.theme).toBe('light');
+  });
+
+  it('should set data-theme attribute on document', () => {
+    const { result } = renderHook(() => useTheme(), { wrapper });
+    
+    act(() => {
+      result.current.setTheme('light');
+    });
+    
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+  });
+
+  it('should update data-theme attribute when theme changes', () => {
+    const { result } = renderHook(() => useTheme(), { wrapper });
+    
+    act(() => {
+      result.current.toggleTheme();
+    });
+    
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+    
+    act(() => {
+      result.current.toggleTheme();
+    });
+    
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
 });

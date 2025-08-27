@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { useSidebar } from '../../hooks/useSidebar';
+import { useTheme } from '../../design-system/theme/ThemeProvider';
+import { cn } from '../../utils/cn';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -20,9 +22,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onAddProspect,
 }) => {
   const { isOpen: sidebarOpen, toggle: handleMenuToggle, close: handleSidebarClose } = useSidebar();
+  const { resolvedTheme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-[#141414] flex flex-col">
+    <div className={cn(
+      "min-h-screen flex flex-col",
+      resolvedTheme === 'light' ? "bg-[#f5f5f5]" : "bg-[#141414]"
+    )}>
       {/* Sticky Header */}
       <div className="sticky top-0 z-50">
         <Header
